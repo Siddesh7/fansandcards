@@ -42,7 +42,7 @@ class RoomService {
         name: playerName,
         points: 0,
         isConnected: true,
-      }],
+      }] as any, // Cast to any to satisfy Json type
       max_players: 8,
       current_round: 1,
       total_rounds: 5,
@@ -83,7 +83,7 @@ class RoomService {
 
     const { data, error } = await supabase
       .from('game_rooms')
-      .update({ players: updatedPlayers })
+      .update({ players: updatedPlayers as any }) // Cast to any to satisfy Json type
       .eq('id', roomId)
       .select()
       .single();
@@ -112,7 +112,7 @@ class RoomService {
       // Update room with remaining players
       await supabase
         .from('game_rooms')
-        .update({ players: updatedPlayers })
+        .update({ players: updatedPlayers as any }) // Cast to any to satisfy Json type
         .eq('id', roomId);
     }
   }
@@ -120,12 +120,12 @@ class RoomService {
   async updateRoom(roomId: string, updates: Partial<GameRoom>): Promise<GameRoom | null> {
     const supabaseUpdates: any = {};
     
-    if (updates.players) supabaseUpdates.players = updates.players;
+    if (updates.players) supabaseUpdates.players = updates.players as any; // Cast to any
     if (updates.gameState) supabaseUpdates.game_state = updates.gameState;
     if (updates.currentRound) supabaseUpdates.current_round = updates.currentRound;
     if (updates.promptCard) supabaseUpdates.prompt_card = updates.promptCard;
-    if (updates.submittedCards) supabaseUpdates.submitted_cards = updates.submittedCards;
-    if (updates.chatMessages) supabaseUpdates.chat_messages = updates.chatMessages;
+    if (updates.submittedCards) supabaseUpdates.submitted_cards = updates.submittedCards as any; // Cast to any
+    if (updates.chatMessages) supabaseUpdates.chat_messages = updates.chatMessages as any; // Cast to any
     if (updates.timeLeft !== undefined) supabaseUpdates.time_left = updates.timeLeft;
 
     const { data, error } = await supabase
