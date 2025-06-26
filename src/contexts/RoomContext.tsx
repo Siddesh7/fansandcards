@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { roomService } from '@/services/roomService';
 
@@ -34,6 +33,7 @@ export interface GameRoom {
   timeLeft: number;
   createdAt?: string;
   updatedAt?: string;
+  creatorId?: string; // Add creator ID to interface
 }
 
 interface RoomContextType {
@@ -47,6 +47,7 @@ interface RoomContextType {
   updateRoom: (roomId: string, updates: Partial<GameRoom>) => Promise<void>;
   getRoom: (roomId: string) => Promise<GameRoom | null>;
   loadRooms: () => Promise<void>;
+  isCreator: (roomId: string, playerId: string) => boolean;
 }
 
 const RoomContext = createContext<RoomContextType | null>(null);
@@ -115,7 +116,12 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
     setLoading(true);
     setError(null);
     try {
-      const playerId = Math.random().toString(36).substr(2, 9);
+      // Check if player already exists for this room
+      let playerId = localStorage.getItem(`player_${roomId}`);
+      if (!playerId) {
+        playerId = Math.random().toString(36).substr(2, 9);
+      }
+      
       const updatedRoom = await roomService.joinRoom(roomId, playerName, playerId);
       
       if (updatedRoom) {
@@ -135,6 +141,11 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const isCreator = (roomId: string, playerId: string): boolean => {
+    const room = rooms[roomId];
+    return room?.creatorId === playerId;
   };
 
   const leaveRoom = async (roomId: string, playerId: string) => {
@@ -196,6 +207,7 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
       updateRoom,
       getRoom,
       loadRooms,
+      isCreator,
     }}>
       {children}
     </RoomContext.Provider>

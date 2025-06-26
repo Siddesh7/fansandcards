@@ -59,7 +59,7 @@ const PaymentHandler = ({ onSuccess, children, disabled = false }: PaymentHandle
     <Button 
       onClick={handlePayment}
       disabled={disabled || isProcessing || !authenticated}
-      className="font-bold"
+      className="font-bold bg-red-600 hover:bg-red-700"
     >
       {isProcessing ? (
         <>

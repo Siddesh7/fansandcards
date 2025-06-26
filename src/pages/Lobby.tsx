@@ -53,8 +53,9 @@ const Lobby = () => {
         setShowCreateLobby(false);
         toast({
           title: "Room Created! 🎉",
-          description: "Your room is ready. Inviting players...",
+          description: "Your room is ready. You can now start the game!",
         });
+        // Creator goes directly to game without payment
         navigate(`/game/${roomId}`);
       } catch (error) {
         toast({
@@ -280,7 +281,7 @@ const Lobby = () => {
               {roomList.map((room, index) => (
                 <Card 
                   key={room.id} 
-                  className="bg-black/30 border-green-400 p-4 backdrop-blur-sm transition-all duration-300 hover:scale-105 animate-slide-in-right"
+                  className="bg-black/30 border-green-400 p-4 backdrop-blur-sm transition-all duration-300 animate-slide-in-right"
                   style={{ animationDelay: `${index * 100}ms` }}
                 >
                   <div className="flex justify-between items-center">
@@ -310,7 +311,7 @@ const Lobby = () => {
                         onClick={() => copyRoomLink(room.id)}
                         variant="outline"
                         size="sm"
-                        className="border-green-400 text-green-400"
+                        className="border-green-400 text-green-400 hover:bg-green-400/10"
                       >
                         <Copy className="w-4 h-4" />
                       </Button>

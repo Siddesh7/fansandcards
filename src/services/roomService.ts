@@ -42,7 +42,7 @@ class RoomService {
         name: playerName,
         points: 0,
         isConnected: true,
-      }] as any, // Cast to any to satisfy Json type
+      }] as any,
       max_players: 8,
       current_round: 1,
       total_rounds: 5,
@@ -51,6 +51,7 @@ class RoomService {
       submitted_cards: [],
       chat_messages: [],
       time_left: 30,
+      creator_id: playerId, // Track the room creator
     };
 
     const { data, error } = await supabase
@@ -74,6 +75,12 @@ class RoomService {
       return null;
     }
 
+    // Check if player is already in the room
+    const existingPlayer = room.players.find(p => p.id === playerId);
+    if (existingPlayer) {
+      return room; // Player already in room, return existing room
+    }
+
     const updatedPlayers = [...room.players, {
       id: playerId,
       name: playerName,
@@ -83,7 +90,7 @@ class RoomService {
 
     const { data, error } = await supabase
       .from('game_rooms')
-      .update({ players: updatedPlayers as any }) // Cast to any to satisfy Json type
+      .update({ players: updatedPlayers as any })
       .eq('id', roomId)
       .select()
       .single();
@@ -158,6 +165,7 @@ class RoomService {
       timeLeft: data.time_left,
       createdAt: data.created_at,
       updatedAt: data.updated_at,
+      creatorId: data.creator_id, // Map creator ID
     };
   }
 

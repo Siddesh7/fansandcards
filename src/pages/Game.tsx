@@ -9,12 +9,15 @@ import { Input } from '@/components/ui/input';
 import { Trophy, Clock, Users, MessageSquare, Star, Copy, Loader2 } from 'lucide-react';
 import { useRoom } from '@/contexts/RoomContext';
 import { useToast } from '@/hooks/use-toast';
+import { usePrivy } from '@privy-io/react-auth';
+import PaymentHandler from '@/components/PaymentHandler';
 
 const Game = () => {
   const { roomId } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { getRoom, updateRoom, joinRoom } = useRoom();
+  const { authenticated } = usePrivy();
+  const { getRoom, updateRoom, joinRoom, isCreator } = useRoom();
   
   const [room, setRoom] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -24,6 +27,7 @@ const Game = () => {
   const [newMessage, setNewMessage] = useState("");
   const [playerName, setPlayerName] = useState("");
   const [votingScores, setVotingScores] = useState<Record<string, number>>({});
+  const [needsPayment, setNeedsPayment] = useState(false);
 
   // Sample cards for demo
   const playerHand = [
@@ -60,9 +64,12 @@ const Game = () => {
     try {
       const currentRoom = await getRoom(roomId);
       if (!currentRoom) {
-        // Room doesn't exist, try to join with a default name
-        setPlayerName('Guest_' + Math.random().toString(36).substr(2, 4));
-        setLoading(false);
+        toast({
+          title: "Room Not Found",
+          description: "This room doesn't exist or has been deleted.",
+          variant: "destructive",
+        });
+        navigate('/lobby');
         return;
       }
 
@@ -72,6 +79,16 @@ const Game = () => {
       const playerId = localStorage.getItem(`player_${roomId}`);
       if (playerId) {
         setCurrentPlayerId(playerId);
+        // Check if player is already in the room
+        const playerInRoom = currentRoom.players.find(p => p.id === playerId);
+        if (playerInRoom) {
+          setNeedsPayment(false);
+        } else {
+          setNeedsPayment(true);
+        }
+      } else {
+        setNeedsPayment(true);
+        setPlayerName('Guest_' + Math.random().toString(36).substr(2, 4));
       }
     } catch (error) {
       console.error('Failed to load room:', error);
@@ -110,6 +127,7 @@ const Game = () => {
         if (success) {
           const newPlayerId = localStorage.getItem(`player_${roomId}`);
           setCurrentPlayerId(newPlayerId!);
+          setNeedsPayment(false);
           await loadRoom();
         } else {
           toast({
@@ -129,7 +147,7 @@ const Game = () => {
   };
 
   const startGame = () => {
-    if (room && room.players.length >= 2) {
+    if (room && room.players.length >= 2 && isCreator(roomId!, currentPlayerId)) {
       updateRoom(roomId!, { 
         gameState: 'playing',
         timeLeft: 30,
@@ -248,7 +266,7 @@ const Game = () => {
     });
   };
 
-  // If room doesn't exist or player hasn't joined
+  // Loading state
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-green-900 via-green-800 to-navy-900 flex items-center justify-center">
@@ -260,11 +278,18 @@ const Game = () => {
     );
   }
 
-  if (!room || !currentPlayerId) {
+  // Direct link access - needs payment first
+  if (!room || needsPayment) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-green-900 via-green-800 to-navy-900 flex items-center justify-center">
         <Card className="bg-black/30 border-green-400 p-8 backdrop-blur-sm max-w-md w-full mx-4">
           <h2 className="text-2xl font-bold text-white mb-4 text-center">Join Game Room</h2>
+          {room && (
+            <div className="mb-4 text-center">
+              <h3 className="text-lg text-green-400 font-bold">{room.name}</h3>
+              <p className="text-gray-300">{room.players.length}/{room.maxPlayers} players</p>
+            </div>
+          )}
           <div className="space-y-4">
             <Input 
               placeholder="Enter your name"
@@ -272,13 +297,27 @@ const Game = () => {
               onChange={(e) => setPlayerName(e.target.value)}
               className="bg-black/50 border-green-400 text-white placeholder-gray-400"
             />
-            <Button 
-              onClick={handleJoinRoom}
-              className="w-full bg-green-600 hover:bg-green-700"
-              disabled={!playerName.trim()}
-            >
-              Join Room
-            </Button>
+            
+            {authenticated ? (
+              <PaymentHandler 
+                onSuccess={handleJoinRoom}
+                disabled={!playerName.trim()}
+              >
+                PAY 0.1 CHZ & JOIN
+              </PaymentHandler>
+            ) : (
+              <div className="text-center">
+                <p className="text-yellow-400 mb-2">Connect your wallet to join</p>
+                <Button 
+                  onClick={() => navigate('/lobby')}
+                  variant="outline"
+                  className="w-full border-gray-600 text-gray-400"
+                >
+                  Back to Lobby
+                </Button>
+              </div>
+            )}
+            
             <Button 
               onClick={() => navigate('/lobby')}
               variant="outline"
@@ -345,13 +384,19 @@ const Game = () => {
                   <p className="text-green-300 mb-4">
                     {room.players.length}/{room.maxPlayers} players joined
                   </p>
-                  {room.players.length >= 2 && (
+                  {room.players.length >= 2 && isCreator(roomId!, currentPlayerId) && (
                     <Button 
                       onClick={startGame}
                       className="bg-red-600 hover:bg-red-700 text-white font-bold px-8 py-4 text-lg"
                     >
                       🚀 START GAME
                     </Button>
+                  )}
+                  {room.players.length >= 2 && !isCreator(roomId!, currentPlayerId) && (
+                    <p className="text-yellow-400 text-lg">Waiting for the room creator to start the game...</p>
+                  )}
+                  {room.players.length < 2 && (
+                    <p className="text-gray-400">Need at least 2 players to start</p>
                   )}
                 </Card>
               </div>
