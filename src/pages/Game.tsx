@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -7,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
-import { Trophy, Clock, Users, MessageSquare, Star, Copy } from 'lucide-react';
+import { Trophy, Clock, Users, MessageSquare, Star, Copy, Loader2 } from 'lucide-react';
 import { useRoom } from '@/contexts/RoomContext';
 import { useToast } from '@/hooks/use-toast';
 
@@ -17,7 +16,8 @@ const Game = () => {
   const { toast } = useToast();
   const { getRoom, updateRoom, joinRoom } = useRoom();
   
-  const [room, setRoom] = useState(getRoom(roomId!));
+  const [room, setRoom] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
   const [currentPlayerId, setCurrentPlayerId] = useState<string>('');
   const [selectedCard, setSelectedCard] = useState<string>('');
   const [hasSubmitted, setHasSubmitted] = useState(false);
@@ -50,21 +50,40 @@ const Game = () => {
       return;
     }
 
-    const currentRoom = getRoom(roomId);
-    if (!currentRoom) {
-      // Try to join with a default name if room doesn't exist locally
-      setPlayerName('Guest_' + Math.random().toString(36).substr(2, 4));
-      return;
-    }
+    loadRoom();
+  }, [roomId, navigate]);
 
-    setRoom(currentRoom);
+  const loadRoom = async () => {
+    if (!roomId) return;
     
-    // Get current player ID from localStorage
-    const playerId = localStorage.getItem(`player_${roomId}`);
-    if (playerId) {
-      setCurrentPlayerId(playerId);
+    setLoading(true);
+    try {
+      const currentRoom = await getRoom(roomId);
+      if (!currentRoom) {
+        // Room doesn't exist, try to join with a default name
+        setPlayerName('Guest_' + Math.random().toString(36).substr(2, 4));
+        setLoading(false);
+        return;
+      }
+
+      setRoom(currentRoom);
+      
+      // Get current player ID from localStorage
+      const playerId = localStorage.getItem(`player_${roomId}`);
+      if (playerId) {
+        setCurrentPlayerId(playerId);
+      }
+    } catch (error) {
+      console.error('Failed to load room:', error);
+      toast({
+        title: "Failed to Load Room",
+        description: "Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
     }
-  }, [roomId, navigate, getRoom]);
+  };
 
   useEffect(() => {
     if (!room?.promptCard && room?.gameState === 'playing') {
@@ -84,17 +103,25 @@ const Game = () => {
     }
   }, [room?.timeLeft, room?.gameState, hasSubmitted, roomId, updateRoom]);
 
-  const handleJoinRoom = () => {
+  const handleJoinRoom = async () => {
     if (playerName.trim() && roomId) {
-      const success = joinRoom(roomId, playerName);
-      if (success) {
-        const newPlayerId = localStorage.getItem(`player_${roomId}`);
-        setCurrentPlayerId(newPlayerId!);
-        setRoom(getRoom(roomId));
-      } else {
+      try {
+        const success = await joinRoom(roomId, playerName);
+        if (success) {
+          const newPlayerId = localStorage.getItem(`player_${roomId}`);
+          setCurrentPlayerId(newPlayerId!);
+          await loadRoom();
+        } else {
+          toast({
+            title: "Cannot Join Room",
+            description: "Room is full or doesn't exist.",
+            variant: "destructive",
+          });
+        }
+      } catch (error) {
         toast({
-          title: "Cannot Join Room",
-          description: "Room is full or doesn't exist.",
+          title: "Failed to Join Room",
+          description: "Please try again.",
           variant: "destructive",
         });
       }
@@ -222,6 +249,17 @@ const Game = () => {
   };
 
   // If room doesn't exist or player hasn't joined
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-green-900 via-green-800 to-navy-900 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 animate-spin text-white mx-auto mb-4" />
+          <p className="text-white">Loading game room...</p>
+        </div>
+      </div>
+    );
+  }
+
   if (!room || !currentPlayerId) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-green-900 via-green-800 to-navy-900 flex items-center justify-center">

@@ -1,10 +1,10 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Users, Trophy, Plus, Copy, ExternalLink } from 'lucide-react';
+import { Users, Trophy, Plus, Copy, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { usePrivy } from '@privy-io/react-auth';
 import { useToast } from '@/hooks/use-toast';
@@ -15,17 +15,27 @@ const Lobby = () => {
   const navigate = useNavigate();
   const { authenticated, user } = usePrivy();
   const { toast } = useToast();
-  const { rooms, createRoom, joinRoom } = useRoom();
+  const { rooms, loading, error, createRoom, joinRoom, loadRooms } = useRoom();
   
   const [showCreateLobby, setShowCreateLobby] = useState(false);
   const [newLobbyName, setNewLobbyName] = useState("");
   const [playerName, setPlayerName] = useState(
     user?.email?.address ? user.email.address.split('@')[0] : 'Player'
   );
+  const [isCreatingRoom, setIsCreatingRoom] = useState(false);
 
   const roomList = Object.values(rooms);
 
-  const handleCreateLobby = () => {
+  // Refresh rooms every 10 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      loadRooms();
+    }, 10000);
+
+    return () => clearInterval(interval);
+  }, [loadRooms]);
+
+  const handleCreateLobby = async () => {
     if (!authenticated) {
       toast({
         title: "Authentication Required",
@@ -36,18 +46,29 @@ const Lobby = () => {
     }
 
     if (newLobbyName.trim() && playerName.trim()) {
-      const roomId = createRoom(newLobbyName, playerName);
-      setNewLobbyName("");
-      setShowCreateLobby(false);
-      toast({
-        title: "Room Created! 🎉",
-        description: "Your room is ready. Inviting players...",
-      });
-      navigate(`/game/${roomId}`);
+      setIsCreatingRoom(true);
+      try {
+        const roomId = await createRoom(newLobbyName, playerName);
+        setNewLobbyName("");
+        setShowCreateLobby(false);
+        toast({
+          title: "Room Created! 🎉",
+          description: "Your room is ready. Inviting players...",
+        });
+        navigate(`/game/${roomId}`);
+      } catch (error) {
+        toast({
+          title: "Failed to Create Room",
+          description: "Please try again.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsCreatingRoom(false);
+      }
     }
   };
 
-  const handleJoinLobby = (roomId: string) => {
+  const handleJoinLobby = async (roomId: string) => {
     console.log('Attempting to join room:', roomId, 'with player:', playerName);
     
     if (!authenticated) {
@@ -68,17 +89,25 @@ const Lobby = () => {
       return;
     }
 
-    const success = joinRoom(roomId, playerName);
-    if (success) {
+    try {
+      const success = await joinRoom(roomId, playerName);
+      if (success) {
+        toast({
+          title: "Joined Room! 🎮",
+          description: "Welcome to the game!",
+        });
+        navigate(`/game/${roomId}`);
+      } else {
+        toast({
+          title: "Cannot Join Room",
+          description: "Room is full or doesn't exist.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
       toast({
-        title: "Joined Room! 🎮",
-        description: "Welcome to the game!",
-      });
-      navigate(`/game/${roomId}`);
-    } else {
-      toast({
-        title: "Cannot Join Room",
-        description: "Room is full or doesn't exist.",
+        title: "Failed to Join Room",
+        description: "Please try again.",
         variant: "destructive",
       });
     }
@@ -92,6 +121,17 @@ const Lobby = () => {
       description: "Share this link with friends to join the game.",
     });
   };
+
+  if (loading && roomList.length === 0) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-green-900 via-green-800 to-navy-900 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 animate-spin text-white mx-auto mb-4" />
+          <p className="text-white">Loading rooms...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-green-900 via-green-800 to-navy-900 relative">
@@ -115,6 +155,19 @@ const Lobby = () => {
             <div className="mt-4 p-4 bg-yellow-900/30 border border-yellow-400 rounded-lg">
               <p className="text-yellow-400 font-bold">⚠️ Connect your wallet to create or join games</p>
               <p className="text-yellow-300 text-sm mt-1">Authentication required for all game activities</p>
+            </div>
+          )}
+          {error && (
+            <div className="mt-4 p-4 bg-red-900/30 border border-red-400 rounded-lg">
+              <p className="text-red-400 font-bold">Error: {error}</p>
+              <Button 
+                onClick={loadRooms}
+                variant="outline"
+                size="sm"
+                className="mt-2 border-red-400 text-red-400"
+              >
+                Retry
+              </Button>
             </div>
           )}
         </div>
@@ -146,14 +199,24 @@ const Lobby = () => {
               <h2 className="text-2xl font-bold text-white flex items-center gap-2">
                 <Users className="w-6 h-6 text-green-400" />
                 Game Rooms
+                {loading && <Loader2 className="w-4 h-4 animate-spin text-green-400" />}
               </h2>
               <Button 
                 onClick={() => setShowCreateLobby(!showCreateLobby)}
                 className="bg-red-600 hover:bg-red-700 text-white font-bold"
-                disabled={!authenticated}
+                disabled={!authenticated || isCreatingRoom}
               >
-                <Plus className="w-4 h-4 mr-2" />
-                CREATE ROOM
+                {isCreatingRoom ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Creating...
+                  </>
+                ) : (
+                  <>
+                    <Plus className="w-4 h-4 mr-2" />
+                    CREATE ROOM
+                  </>
+                )}
               </Button>
             </div>
 
@@ -167,20 +230,28 @@ const Lobby = () => {
                     value={newLobbyName}
                     onChange={(e) => setNewLobbyName(e.target.value)}
                     className="bg-black/50 border-green-400 text-white placeholder-gray-400"
-                    disabled={!authenticated}
+                    disabled={!authenticated || isCreatingRoom}
                   />
                   <div className="flex gap-2">
                     <Button 
                       onClick={handleCreateLobby}
                       className="bg-green-600 hover:bg-green-700 flex-1"
-                      disabled={!authenticated || !newLobbyName.trim() || !playerName.trim()}
+                      disabled={!authenticated || !newLobbyName.trim() || !playerName.trim() || isCreatingRoom}
                     >
-                      🌍 CREATE ROOM
+                      {isCreatingRoom ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Creating...
+                        </>
+                      ) : (
+                        '🌍 CREATE ROOM'
+                      )}
                     </Button>
                     <Button 
                       onClick={() => setShowCreateLobby(false)}
                       variant="outline" 
                       className="border-gray-600 text-gray-400 flex-1"
+                      disabled={isCreatingRoom}
                     >
                       Cancel
                     </Button>

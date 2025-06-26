@@ -1,5 +1,6 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { roomService } from '@/services/roomService';
 
 export interface Player {
   id: string;
@@ -31,16 +32,21 @@ export interface GameRoom {
     timestamp: string;
   }>;
   timeLeft: number;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 interface RoomContextType {
   rooms: Record<string, GameRoom>;
   currentRoom: GameRoom | null;
-  createRoom: (name: string, playerName: string) => string;
-  joinRoom: (roomId: string, playerName: string) => boolean;
-  leaveRoom: (roomId: string, playerId: string) => void;
-  updateRoom: (roomId: string, updates: Partial<GameRoom>) => void;
-  getRoom: (roomId: string) => GameRoom | null;
+  loading: boolean;
+  error: string | null;
+  createRoom: (name: string, playerName: string) => Promise<string>;
+  joinRoom: (roomId: string, playerName: string) => Promise<boolean>;
+  leaveRoom: (roomId: string, playerId: string) => Promise<void>;
+  updateRoom: (roomId: string, updates: Partial<GameRoom>) => Promise<void>;
+  getRoom: (roomId: string) => Promise<GameRoom | null>;
+  loadRooms: () => Promise<void>;
 }
 
 const RoomContext = createContext<RoomContextType | null>(null);
@@ -56,132 +62,140 @@ export const useRoom = () => {
 export const RoomProvider = ({ children }: { children: ReactNode }) => {
   const [rooms, setRooms] = useState<Record<string, GameRoom>>({});
   const [currentRoom, setCurrentRoom] = useState<GameRoom | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  // Load rooms from localStorage on mount
+  // Load rooms on mount
   useEffect(() => {
-    const savedRooms = localStorage.getItem('gameRooms');
-    if (savedRooms) {
-      setRooms(JSON.parse(savedRooms));
-    }
+    loadRooms();
   }, []);
 
-  // Save rooms to localStorage whenever rooms change
-  useEffect(() => {
-    localStorage.setItem('gameRooms', JSON.stringify(rooms));
-  }, [rooms]);
-
-  const generateRoomId = () => {
-    return Math.random().toString(36).substr(2, 9);
+  const loadRooms = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const roomList = await roomService.getAllRooms();
+      const roomsMap = roomList.reduce((acc, room) => {
+        acc[room.id] = room;
+        return acc;
+      }, {} as Record<string, GameRoom>);
+      setRooms(roomsMap);
+    } catch (err) {
+      console.error('Failed to load rooms:', err);
+      setError('Failed to load rooms');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const createRoom = (name: string, playerName: string): string => {
-    const roomId = generateRoomId();
-    const playerId = Math.random().toString(36).substr(2, 9);
-    
-    const newRoom: GameRoom = {
-      id: roomId,
-      name,
-      players: [{
-        id: playerId,
-        name: playerName,
-        points: 0,
-        isConnected: true,
-      }],
-      maxPlayers: 8,
-      currentRound: 1,
-      totalRounds: 5,
-      gameState: 'waiting',
-      promptCard: '',
-      submittedCards: [],
-      chatMessages: [],
-      timeLeft: 30,
-    };
-
-    setRooms(prev => ({ ...prev, [roomId]: newRoom }));
-    setCurrentRoom(newRoom);
-    
-    // Store current player ID in localStorage for this room
-    localStorage.setItem(`player_${roomId}`, playerId);
-    
-    return roomId;
+  const createRoom = async (name: string, playerName: string): Promise<string> => {
+    setLoading(true);
+    setError(null);
+    try {
+      const playerId = Math.random().toString(36).substr(2, 9);
+      const roomData = await roomService.createRoom(name, playerName, playerId);
+      
+      setRooms(prev => ({ ...prev, [roomData.id]: roomData }));
+      setCurrentRoom(roomData);
+      
+      // Store current player ID for this room
+      localStorage.setItem(`player_${roomData.id}`, playerId);
+      
+      return roomData.id;
+    } catch (err) {
+      console.error('Failed to create room:', err);
+      setError('Failed to create room');
+      throw err;
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const joinRoom = (roomId: string, playerName: string): boolean => {
-    const room = rooms[roomId];
-    if (!room || room.players.length >= room.maxPlayers) {
+  const joinRoom = async (roomId: string, playerName: string): Promise<boolean> => {
+    setLoading(true);
+    setError(null);
+    try {
+      const playerId = Math.random().toString(36).substr(2, 9);
+      const updatedRoom = await roomService.joinRoom(roomId, playerName, playerId);
+      
+      if (updatedRoom) {
+        setRooms(prev => ({ ...prev, [roomId]: updatedRoom }));
+        setCurrentRoom(updatedRoom);
+        
+        // Store current player ID for this room
+        localStorage.setItem(`player_${roomId}`, playerId);
+        
+        return true;
+      }
       return false;
-    }
-
-    const playerId = Math.random().toString(36).substr(2, 9);
-    const updatedRoom = {
-      ...room,
-      players: [...room.players, {
-        id: playerId,
-        name: playerName,
-        points: 0,
-        isConnected: true,
-      }],
-    };
-
-    setRooms(prev => ({ ...prev, [roomId]: updatedRoom }));
-    setCurrentRoom(updatedRoom);
-    
-    // Store current player ID in localStorage for this room
-    localStorage.setItem(`player_${roomId}`, playerId);
-    
-    return true;
-  };
-
-  const leaveRoom = (roomId: string, playerId: string) => {
-    const room = rooms[roomId];
-    if (!room) return;
-
-    const updatedRoom = {
-      ...room,
-      players: room.players.filter(p => p.id !== playerId),
-    };
-
-    if (updatedRoom.players.length === 0) {
-      // Remove empty room
-      setRooms(prev => {
-        const newRooms = { ...prev };
-        delete newRooms[roomId];
-        return newRooms;
-      });
-    } else {
-      setRooms(prev => ({ ...prev, [roomId]: updatedRoom }));
-    }
-
-    // Remove player ID from localStorage
-    localStorage.removeItem(`player_${roomId}`);
-    setCurrentRoom(null);
-  };
-
-  const updateRoom = (roomId: string, updates: Partial<GameRoom>) => {
-    const room = rooms[roomId];
-    if (!room) return;
-
-    const updatedRoom = { ...room, ...updates };
-    setRooms(prev => ({ ...prev, [roomId]: updatedRoom }));
-    
-    if (currentRoom?.id === roomId) {
-      setCurrentRoom(updatedRoom);
+    } catch (err) {
+      console.error('Failed to join room:', err);
+      setError('Failed to join room');
+      return false;
+    } finally {
+      setLoading(false);
     }
   };
 
-  const getRoom = (roomId: string): GameRoom | null => {
-    return rooms[roomId] || null;
+  const leaveRoom = async (roomId: string, playerId: string) => {
+    try {
+      await roomService.leaveRoom(roomId, playerId);
+      
+      // Remove player ID from localStorage
+      localStorage.removeItem(`player_${roomId}`);
+      setCurrentRoom(null);
+      
+      // Reload rooms to get updated state
+      await loadRooms();
+    } catch (err) {
+      console.error('Failed to leave room:', err);
+      setError('Failed to leave room');
+    }
+  };
+
+  const updateRoom = async (roomId: string, updates: Partial<GameRoom>) => {
+    try {
+      const updatedRoom = await roomService.updateRoom(roomId, updates);
+      
+      if (updatedRoom) {
+        setRooms(prev => ({ ...prev, [roomId]: updatedRoom }));
+        
+        if (currentRoom?.id === roomId) {
+          setCurrentRoom(updatedRoom);
+        }
+      }
+    } catch (err) {
+      console.error('Failed to update room:', err);
+      setError('Failed to update room');
+    }
+  };
+
+  const getRoom = async (roomId: string): Promise<GameRoom | null> => {
+    try {
+      const room = await roomService.getRoom(roomId);
+      if (room) {
+        setRooms(prev => ({ ...prev, [roomId]: room }));
+      }
+      return room;
+    } catch (err) {
+      console.error('Failed to get room:', err);
+      setError('Failed to get room');
+      return null;
+    }
   };
 
   return (
     <RoomContext.Provider value={{
       rooms,
       currentRoom,
+      loading,
+      error,
       createRoom,
       joinRoom,
       leaveRoom,
       updateRoom,
       getRoom,
+      loadRooms,
     }}>
       {children}
     </RoomContext.Provider>
