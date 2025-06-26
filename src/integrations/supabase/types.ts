@@ -13,6 +13,7 @@ export type Database = {
         Row: {
           chat_messages: Json
           created_at: string
+          creator_id: string | null
           current_round: number
           game_state: string
           id: string
@@ -28,6 +29,7 @@ export type Database = {
         Insert: {
           chat_messages?: Json
           created_at?: string
+          creator_id?: string | null
           current_round?: number
           game_state?: string
           id: string
@@ -43,6 +45,7 @@ export type Database = {
         Update: {
           chat_messages?: Json
           created_at?: string
+          creator_id?: string | null
           current_round?: number
           game_state?: string
           id?: string
