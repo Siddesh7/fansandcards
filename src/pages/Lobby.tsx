@@ -4,46 +4,56 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Users, Trophy, Plus } from 'lucide-react';
+import { Users, Trophy, Plus, Copy, ExternalLink } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { usePrivy } from '@privy-io/react-auth';
+import { useToast } from '@/hooks/use-toast';
 import PaymentHandler from '@/components/PaymentHandler';
+import { useRoom } from '@/contexts/RoomContext';
 
 const Lobby = () => {
   const navigate = useNavigate();
-  const { authenticated } = usePrivy();
+  const { authenticated, user } = usePrivy();
+  const { toast } = useToast();
+  const { rooms, createRoom, joinRoom } = useRoom();
   
-  const [lobbies, setLobbies] = useState([]);
-  const [currentLobby, setCurrentLobby] = useState(null);
   const [showCreateLobby, setShowCreateLobby] = useState(false);
   const [newLobbyName, setNewLobbyName] = useState("");
+  const [playerName, setPlayerName] = useState(user?.email?.split('@')[0] || 'Player');
 
-  const handleJoinLobby = (lobby) => {
-    setCurrentLobby(lobby);
-    setLobbies(prev => prev.map(l => 
-      l.id === lobby.id ? { ...l, players: l.players + 1 } : l
-    ));
-  };
-
-  const handleStartGame = () => {
-    navigate('/game');
-  };
+  const roomList = Object.values(rooms);
 
   const handleCreateLobby = () => {
-    if (newLobbyName.trim()) {
-      const newLobby = {
-        id: Date.now(),
-        name: newLobbyName,
-        players: 1,
-        maxPlayers: 8,
-        isPrivate: false,
-        theme: "Football"
-      };
-      setLobbies(prev => [...prev, newLobby]);
+    if (newLobbyName.trim() && playerName.trim()) {
+      const roomId = createRoom(newLobbyName, playerName);
       setNewLobbyName("");
       setShowCreateLobby(false);
-      setCurrentLobby(newLobby);
+      navigate(`/game/${roomId}`);
     }
+  };
+
+  const handleJoinLobby = (roomId: string) => {
+    if (playerName.trim()) {
+      const success = joinRoom(roomId, playerName);
+      if (success) {
+        navigate(`/game/${roomId}`);
+      } else {
+        toast({
+          title: "Cannot Join Room",
+          description: "Room is full or doesn't exist.",
+          variant: "destructive",
+        });
+      }
+    }
+  };
+
+  const copyRoomLink = (roomId: string) => {
+    const link = `${window.location.origin}/game/${roomId}`;
+    navigator.clipboard.writeText(link);
+    toast({
+      title: "Link Copied! 📋",
+      description: "Share this link with friends to join the game.",
+    });
   };
 
   return (
@@ -70,29 +80,45 @@ const Lobby = () => {
         </div>
 
         <div className="max-w-4xl mx-auto">
+          {/* Player Name Input */}
+          <div className="mb-6">
+            <Card className="bg-black/30 border-green-400 p-4 backdrop-blur-sm">
+              <div className="flex gap-4 items-center">
+                <label htmlFor="playerName" className="text-white font-bold">Your Name:</label>
+                <Input 
+                  id="playerName"
+                  placeholder="Enter your name"
+                  value={playerName}
+                  onChange={(e) => setPlayerName(e.target.value)}
+                  className="bg-black/50 border-green-400 text-white placeholder-gray-400 max-w-xs"
+                />
+              </div>
+            </Card>
+          </div>
+
           {/* Create Lobby Section */}
           <div className="mb-8">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-2xl font-bold text-white flex items-center gap-2">
                 <Users className="w-6 h-6 text-green-400" />
-                Game Lobbies
+                Game Rooms
               </h2>
               <Button 
                 onClick={() => setShowCreateLobby(!showCreateLobby)}
                 className="bg-red-600 hover:bg-red-700 text-white font-bold"
               >
                 <Plus className="w-4 h-4 mr-2" />
-                CREATE LOBBY
+                CREATE ROOM
               </Button>
             </div>
 
             {/* Create Lobby Form */}
             {showCreateLobby && (
               <Card className="bg-black/30 border-green-400 p-6 backdrop-blur-sm animate-slide-in-right mb-6">
-                <h3 className="text-xl font-bold text-white mb-4">Create New Lobby</h3>
+                <h3 className="text-xl font-bold text-white mb-4">Create New Room</h3>
                 <div className="space-y-4">
                   <Input 
-                    placeholder="Lobby Name (e.g., 'Arsenal Army')"
+                    placeholder="Room Name (e.g., 'Arsenal Army')"
                     value={newLobbyName}
                     onChange={(e) => setNewLobbyName(e.target.value)}
                     className="bg-black/50 border-green-400 text-white placeholder-gray-400"
@@ -101,9 +127,9 @@ const Lobby = () => {
                     <Button 
                       onClick={handleCreateLobby}
                       className="bg-green-600 hover:bg-green-700 flex-1"
-                      disabled={!newLobbyName.trim()}
+                      disabled={!newLobbyName.trim() || !playerName.trim()}
                     >
-                      🌍 CREATE PUBLIC LOBBY
+                      🌍 CREATE ROOM
                     </Button>
                     <Button 
                       onClick={() => setShowCreateLobby(false)}
@@ -118,74 +144,75 @@ const Lobby = () => {
             )}
           </div>
 
-          {/* Lobbies List */}
-          {lobbies.length === 0 ? (
+          {/* Rooms List */}
+          {roomList.length === 0 ? (
             <Card className="bg-black/30 border-green-400 p-8 backdrop-blur-sm text-center">
-              <h3 className="text-xl font-bold text-white mb-2">No Active Lobbies</h3>
-              <p className="text-green-300 mb-4">Be the first to create a lobby and start the fun!</p>
+              <h3 className="text-xl font-bold text-white mb-2">No Active Rooms</h3>
+              <p className="text-green-300 mb-4">Be the first to create a room and start the fun!</p>
               <Button 
                 onClick={() => setShowCreateLobby(true)}
                 className="bg-red-600 hover:bg-red-700 text-white font-bold"
               >
                 <Plus className="w-4 h-4 mr-2" />
-                CREATE FIRST LOBBY
+                CREATE FIRST ROOM
               </Button>
             </Card>
           ) : (
             <div className="space-y-3 mb-8">
-              {lobbies.map((lobby, index) => (
+              {roomList.map((room, index) => (
                 <Card 
-                  key={lobby.id} 
-                  className={`bg-black/30 border-green-400 p-4 backdrop-blur-sm transition-all duration-300 hover:scale-105 animate-slide-in-right ${
-                    currentLobby?.id === lobby.id ? 'border-yellow-400 bg-yellow-400/10' : ''
-                  }`}
+                  key={room.id} 
+                  className="bg-black/30 border-green-400 p-4 backdrop-blur-sm transition-all duration-300 hover:scale-105 animate-slide-in-right"
                   style={{ animationDelay: `${index * 100}ms` }}
                 >
                   <div className="flex justify-between items-center">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
-                        <h3 className="text-xl font-bold text-white">{lobby.name}</h3>
-                        {lobby.isPrivate && <Badge variant="outline" className="border-yellow-400 text-yellow-400">🔒 PRIVATE</Badge>}
-                        <Badge className="bg-green-600 text-white">⚽ {lobby.theme}</Badge>
+                        <h3 className="text-xl font-bold text-white">{room.name}</h3>
+                        <Badge className="bg-green-600 text-white">⚽ Football</Badge>
+                        <Badge 
+                          className={`${
+                            room.gameState === 'waiting' ? 'bg-yellow-600' : 'bg-red-600'
+                          } text-white`}
+                        >
+                          {room.gameState === 'waiting' ? '⏳ WAITING' : '🎮 PLAYING'}
+                        </Badge>
                       </div>
                       <div className="flex items-center gap-4 text-sm">
                         <span className="text-green-400 flex items-center gap-1">
                           <Users className="w-4 h-4" />
-                          {lobby.players}/{lobby.maxPlayers} players
+                          {room.players.length}/{room.maxPlayers} players
                         </span>
                         <span className="text-yellow-400">💰 0.1 CHZ entry</span>
                       </div>
                     </div>
-                    {lobby.players >= lobby.maxPlayers ? (
-                      <Button disabled className="ml-4 font-bold bg-gray-600 cursor-not-allowed">
-                        FULL
+                    
+                    <div className="flex gap-2">
+                      <Button
+                        onClick={() => copyRoomLink(room.id)}
+                        variant="outline"
+                        size="sm"
+                        className="border-green-400 text-green-400"
+                      >
+                        <Copy className="w-4 h-4" />
                       </Button>
-                    ) : (
-                      <PaymentHandler onSuccess={() => handleJoinLobby(lobby)} disabled={!authenticated}>
-                        PAY & JOIN
-                      </PaymentHandler>
-                    )}
+                      
+                      {room.players.length >= room.maxPlayers ? (
+                        <Button disabled className="font-bold bg-gray-600 cursor-not-allowed">
+                          FULL
+                        </Button>
+                      ) : (
+                        <PaymentHandler 
+                          onSuccess={() => handleJoinLobby(room.id)} 
+                          disabled={!authenticated || !playerName.trim()}
+                        >
+                          PAY & JOIN
+                        </PaymentHandler>
+                      )}
+                    </div>
                   </div>
                 </Card>
               ))}
-            </div>
-          )}
-
-          {/* Start Game Button */}
-          {currentLobby && (
-            <div className="text-center">
-              <Card className="bg-black/30 border-yellow-400 p-6 backdrop-blur-sm mb-4">
-                <h3 className="text-xl font-bold text-white mb-2">Current Lobby: {currentLobby.name}</h3>
-                <p className="text-green-300 mb-4">
-                  {currentLobby.players}/{currentLobby.maxPlayers} players joined
-                </p>
-                <PaymentHandler 
-                  onSuccess={handleStartGame} 
-                  disabled={currentLobby.players < 2}
-                >
-                  {currentLobby.players < 2 ? '⏳ WAITING FOR MORE PLAYERS' : '🚀 PAY & START GAME!'}
-                </PaymentHandler>
-              </Card>
             </div>
           )}
         </div>

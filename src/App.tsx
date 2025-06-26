@@ -11,6 +11,7 @@ import Game from "./pages/Game";
 import Results from "./pages/Results";
 import CardCollection from "./pages/CardCollection";
 import NotFound from "./pages/NotFound";
+import { RoomProvider } from "./contexts/RoomContext";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -37,20 +38,22 @@ const App = () => (
         },
       }}
     >
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/lobby" element={<Lobby />} />
-            <Route path="/game" element={<Game />} />
-            <Route path="/results" element={<Results />} />
-            <Route path="/collection" element={<CardCollection />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
+      <RoomProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/lobby" element={<Lobby />} />
+              <Route path="/game/:roomId" element={<Game />} />
+              <Route path="/results" element={<Results />} />
+              <Route path="/collection" element={<CardCollection />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
+      </RoomProvider>
     </PrivyProvider>
   </QueryClientProvider>
 );

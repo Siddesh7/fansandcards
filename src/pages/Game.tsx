@@ -1,139 +1,297 @@
+
 import { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
-import { Trophy, Clock, Users, MessageSquare } from 'lucide-react';
+import { Trophy, Clock, Users, MessageSquare, Star, Copy } from 'lucide-react';
+import { useRoom } from '@/contexts/RoomContext';
+import { useToast } from '@/hooks/use-toast';
 
 const Game = () => {
-  const [gameState, setGameState] = useState('playing'); // 'playing', 'judging', 'results'
-  const [selectedCard, setSelectedCard] = useState(null);
-  const [timeLeft, setTimeLeft] = useState(30);
-  const [currentRound, setCurrentRound] = useState(1);
-  const [isJudge, setIsJudge] = useState(false);
+  const { roomId } = useParams();
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const { getRoom, updateRoom, joinRoom } = useRoom();
+  
+  const [room, setRoom] = useState(getRoom(roomId!));
+  const [currentPlayerId, setCurrentPlayerId] = useState<string>('');
+  const [selectedCard, setSelectedCard] = useState<string>('');
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [newMessage, setNewMessage] = useState("");
-  
-  const [promptCard] = useState({
-    text: "The worst transfer signing was ___",
-    type: "prompt"
-  });
-  
-  const [playerHand] = useState([
-    { id: 1, text: "A drunk ultra with a megaphone", type: "answer" },
-    { id: 2, text: "Neymar's diving masterclass", type: "answer" },
-    { id: 3, text: "Messi's tax returns", type: "answer" },
-    { id: 4, text: "VAR officials watching Netflix", type: "answer" },
-    { id: 5, text: "Ronaldo's hair gel budget", type: "answer" },
-    { id: 6, text: "A referee's WhatsApp group", type: "answer" },
-    { id: 7, text: "Mourinho's parking instructions", type: "answer" },
-  ]);
-  
-  const [actionCard] = useState({
-    id: 8, 
-    text: "Fan Frenzy: Double points this round!", 
-    type: "action"
-  });
-  
-  const [submittedCards] = useState([
-    { id: 1, text: "A drunk ultra with a megaphone", votes: 0 },
-    { id: 2, text: "Neymar's diving masterclass", votes: 0 },
-    { id: 3, text: "Mourinho's parking instructions", votes: 0 },
-    { id: 4, text: "VAR officials watching Netflix", votes: 0 },
-  ]);
-  
-  const [players] = useState([
-    { id: 1, name: "CRFan007", points: 3, isJudge: false },
-    { id: 2, name: "MessiGoat", points: 2, isJudge: true },
-    { id: 3, name: "You", points: 1, isJudge: false },
-    { id: 4, name: "PepGuard", points: 2, isJudge: false },
-  ]);
-  
-  const [chatMessages, setChatMessages] = useState([
-    { id: 1, player: "CRFan007", message: "That card's trash! 😂", timestamp: "now" },
-    { id: 2, player: "MessiGoat", message: "Easy points right here! 🔥", timestamp: "now" },
-  ]);
+  const [playerName, setPlayerName] = useState("");
+  const [votingScores, setVotingScores] = useState<Record<string, number>>({});
+
+  // Sample cards for demo
+  const playerHand = [
+    "A drunk ultra with a megaphone",
+    "Neymar's diving masterclass", 
+    "Messi's tax returns",
+    "VAR officials watching Netflix",
+    "Ronaldo's hair gel budget",
+    "A referee's WhatsApp group",
+    "Mourinho's parking instructions"
+  ];
+
+  const promptCards = [
+    "The worst transfer signing was ___",
+    "What really caused that red card: ___",
+    "The secret to Pep's success: ___",
+    "What players do during VAR checks: ___",
+    "The real reason for that penalty: ___"
+  ];
+
+  useEffect(() => {
+    if (!roomId) {
+      navigate('/lobby');
+      return;
+    }
+
+    const currentRoom = getRoom(roomId);
+    if (!currentRoom) {
+      // Try to join with a default name if room doesn't exist locally
+      setPlayerName('Guest_' + Math.random().toString(36).substr(2, 4));
+      return;
+    }
+
+    setRoom(currentRoom);
+    
+    // Get current player ID from localStorage
+    const playerId = localStorage.getItem(`player_${roomId}`);
+    if (playerId) {
+      setCurrentPlayerId(playerId);
+    }
+  }, [roomId, navigate, getRoom]);
+
+  useEffect(() => {
+    if (!room?.promptCard && room?.gameState === 'playing') {
+      // Set initial prompt card for the round
+      const promptCard = promptCards[room.currentRound - 1] || promptCards[0];
+      updateRoom(roomId!, { promptCard });
+    }
+  }, [room, roomId, updateRoom]);
 
   // Timer countdown
   useEffect(() => {
-    if (timeLeft > 0 && !hasSubmitted) {
-      const timer = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
+    if (room?.timeLeft > 0 && room?.gameState === 'playing' && !hasSubmitted) {
+      const timer = setTimeout(() => {
+        updateRoom(roomId!, { timeLeft: room.timeLeft - 1 });
+      }, 1000);
       return () => clearTimeout(timer);
     }
-  }, [timeLeft, hasSubmitted]);
+  }, [room?.timeLeft, room?.gameState, hasSubmitted, roomId, updateRoom]);
 
-  const selectCard = (card) => {
-    if (!hasSubmitted) {
-      setSelectedCard(card);
+  const handleJoinRoom = () => {
+    if (playerName.trim() && roomId) {
+      const success = joinRoom(roomId, playerName);
+      if (success) {
+        const newPlayerId = localStorage.getItem(`player_${roomId}`);
+        setCurrentPlayerId(newPlayerId!);
+        setRoom(getRoom(roomId));
+      } else {
+        toast({
+          title: "Cannot Join Room",
+          description: "Room is full or doesn't exist.",
+          variant: "destructive",
+        });
+      }
+    }
+  };
+
+  const startGame = () => {
+    if (room && room.players.length >= 2) {
+      updateRoom(roomId!, { 
+        gameState: 'playing',
+        timeLeft: 30,
+        promptCard: promptCards[0]
+      });
     }
   };
 
   const submitCard = () => {
-    if (selectedCard && !hasSubmitted) {
-      setHasSubmitted(true);
-      setTimeLeft(0);
-      // Simulate card flip animation
-      setTimeout(() => {
-        setGameState('judging');
-      }, 1000);
-    }
-  };
-
-  const judgeCard = (card) => {
-    if (isJudge) {
-      // Simulate confetti animation
-      setGameState('results');
-    }
-  };
-
-  const sendMessage = (e) => {
-    e.preventDefault();
-    if (newMessage.trim()) {
-      const message = {
-        id: Date.now(),
-        player: "You",
-        message: newMessage,
-        timestamp: "now"
+    if (selectedCard && !hasSubmitted && room) {
+      const newSubmission = {
+        id: Date.now().toString(),
+        playerId: currentPlayerId,
+        text: selectedCard,
+        votes: []
       };
-      setChatMessages(prev => [...prev, message]);
+
+      const updatedSubmissions = [...room.submittedCards, newSubmission];
+      updateRoom(roomId!, { submittedCards: updatedSubmissions });
+      setHasSubmitted(true);
+
+      // Check if all players have submitted
+      if (updatedSubmissions.length === room.players.length) {
+        updateRoom(roomId!, { gameState: 'voting', timeLeft: 45 });
+      }
+    }
+  };
+
+  const submitVote = (cardId: string, score: number) => {
+    if (!room || !currentPlayerId) return;
+
+    const updatedSubmissions = room.submittedCards.map(card => {
+      if (card.id === cardId) {
+        const existingVoteIndex = card.votes.findIndex(v => v.playerId === currentPlayerId);
+        const newVotes = [...card.votes];
+        
+        if (existingVoteIndex >= 0) {
+          newVotes[existingVoteIndex] = { playerId: currentPlayerId, score };
+        } else {
+          newVotes.push({ playerId: currentPlayerId, score });
+        }
+        
+        return { ...card, votes: newVotes };
+      }
+      return card;
+    });
+
+    updateRoom(roomId!, { submittedCards: updatedSubmissions });
+    setVotingScores(prev => ({ ...prev, [cardId]: score }));
+  };
+
+  const finishVoting = () => {
+    if (!room) return;
+
+    // Calculate scores and update player points
+    const updatedPlayers = room.players.map(player => {
+      const playerCard = room.submittedCards.find(card => card.playerId === player.id);
+      if (playerCard) {
+        const totalScore = playerCard.votes.reduce((sum, vote) => sum + vote.score, 0);
+        const averageScore = playerCard.votes.length > 0 ? totalScore / playerCard.votes.length : 0;
+        return { ...player, points: player.points + Math.round(averageScore) };
+      }
+      return player;
+    });
+
+    updateRoom(roomId!, { 
+      players: updatedPlayers,
+      gameState: 'results',
+      timeLeft: 10
+    });
+
+    setTimeout(() => {
+      if (room.currentRound >= room.totalRounds) {
+        updateRoom(roomId!, { gameState: 'finished' });
+      } else {
+        // Next round
+        updateRoom(roomId!, {
+          currentRound: room.currentRound + 1,
+          gameState: 'playing',
+          timeLeft: 30,
+          submittedCards: [],
+          promptCard: promptCards[room.currentRound] || promptCards[0]
+        });
+        setHasSubmitted(false);
+        setSelectedCard('');
+        setVotingScores({});
+      }
+    }, 5000);
+  };
+
+  const sendMessage = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newMessage.trim() && room && currentPlayerId) {
+      const currentPlayer = room.players.find(p => p.id === currentPlayerId);
+      const message = {
+        id: Date.now().toString(),
+        playerId: currentPlayerId,
+        playerName: currentPlayer?.name || 'Unknown',
+        message: newMessage,
+        timestamp: 'now'
+      };
+      
+      updateRoom(roomId!, { 
+        chatMessages: [...room.chatMessages, message] 
+      });
       setNewMessage("");
     }
   };
+
+  const copyRoomLink = () => {
+    const link = `${window.location.origin}/game/${roomId}`;
+    navigator.clipboard.writeText(link);
+    toast({
+      title: "Room Link Copied! 📋",
+      description: "Share this link with friends to join the game.",
+    });
+  };
+
+  // If room doesn't exist or player hasn't joined
+  if (!room || !currentPlayerId) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-green-900 via-green-800 to-navy-900 flex items-center justify-center">
+        <Card className="bg-black/30 border-green-400 p-8 backdrop-blur-sm max-w-md w-full mx-4">
+          <h2 className="text-2xl font-bold text-white mb-4 text-center">Join Game Room</h2>
+          <div className="space-y-4">
+            <Input 
+              placeholder="Enter your name"
+              value={playerName}
+              onChange={(e) => setPlayerName(e.target.value)}
+              className="bg-black/50 border-green-400 text-white placeholder-gray-400"
+            />
+            <Button 
+              onClick={handleJoinRoom}
+              className="w-full bg-green-600 hover:bg-green-700"
+              disabled={!playerName.trim()}
+            >
+              Join Room
+            </Button>
+            <Button 
+              onClick={() => navigate('/lobby')}
+              variant="outline"
+              className="w-full border-gray-600 text-gray-400"
+            >
+              Back to Lobby
+            </Button>
+          </div>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-green-900 via-green-800 to-navy-900 relative">
       {/* Stadium Background */}
       <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1493962853295-0fd70327578a')] bg-cover bg-center opacity-10"></div>
       
-      {/* Floodlight Effects */}
-      <div className="absolute top-0 left-0 w-64 h-64 bg-white/5 rounded-full blur-3xl animate-pulse"></div>
-      <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl animate-pulse animation-delay-1000"></div>
-      
       <div className="relative z-10 container mx-auto px-4 py-4">
         {/* Game Header */}
         <div className="flex flex-col md:flex-row justify-between items-center mb-6 space-y-4 md:space-y-0">
           <div className="flex items-center gap-4">
             <Badge className="bg-red-600 text-white px-4 py-2 text-lg">
-              ROUND {currentRound}/5
+              ROUND {room.currentRound}/{room.totalRounds}
             </Badge>
             <div className="flex items-center gap-2">
               <Clock className="w-5 h-5 text-yellow-400" />
-              <span className="text-white font-bold">{timeLeft}s</span>
+              <span className="text-white font-bold">{room.timeLeft}s</span>
             </div>
           </div>
           
           <div className="flex items-center gap-2">
-            <Trophy className="w-5 h-5 text-green-400 animate-spin" />
-            <span className="text-green-400 font-bold">FAN ZONE ACTIVE</span>
+            <Button
+              onClick={copyRoomLink}
+              variant="outline"
+              size="sm"
+              className="border-green-400 text-green-400"
+            >
+              <Copy className="w-4 h-4 mr-2" />
+              Share Room
+            </Button>
+            <Badge className="bg-green-600 text-white">
+              {room.name}
+            </Badge>
           </div>
         </div>
 
         {/* Timer Progress Bar */}
         <div className="mb-6">
           <Progress 
-            value={(timeLeft / 30) * 100} 
+            value={(room.timeLeft / (room.gameState === 'voting' ? 45 : 30)) * 100} 
             className="h-3 bg-gray-800"
           />
         </div>
@@ -141,66 +299,55 @@ const Game = () => {
         <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
           {/* Main Game Area */}
           <div className="xl:col-span-3 space-y-6">
-            {/* Prompt Card */}
-            <div className="text-center">
-              <Card className="bg-black border-red-400 border-4 p-8 max-w-2xl mx-auto animate-fade-in">
-                <div className="flex items-center justify-center gap-2 mb-4">
-                  <Trophy className="w-6 h-6 text-red-400" />
-                  <span className="text-red-400 font-bold">PROMPT CARD</span>
-                  <Trophy className="w-6 h-6 text-red-400" />
-                </div>
-                <h2 className="text-2xl md:text-3xl font-bold text-white text-center">
-                  {promptCard.text}
-                </h2>
-              </Card>
-            </div>
-
             {/* Game State Content */}
-            {gameState === 'playing' && (
+            {room.gameState === 'waiting' && (
+              <div className="text-center space-y-6">
+                <Card className="bg-black/30 border-yellow-400 p-8 backdrop-blur-sm">
+                  <h2 className="text-2xl font-bold text-white mb-4">Waiting for Players</h2>
+                  <p className="text-green-300 mb-4">
+                    {room.players.length}/{room.maxPlayers} players joined
+                  </p>
+                  {room.players.length >= 2 && (
+                    <Button 
+                      onClick={startGame}
+                      className="bg-red-600 hover:bg-red-700 text-white font-bold px-8 py-4 text-lg"
+                    >
+                      🚀 START GAME
+                    </Button>
+                  )}
+                </Card>
+              </div>
+            )}
+
+            {room.gameState === 'playing' && (
               <div className="space-y-6">
+                {/* Prompt Card */}
+                <div className="text-center">
+                  <Card className="bg-black border-red-400 border-4 p-8 max-w-2xl mx-auto">
+                    <h2 className="text-2xl md:text-3xl font-bold text-white text-center">
+                      {room.promptCard}
+                    </h2>
+                  </Card>
+                </div>
+
                 {/* Player's Hand */}
                 <div>
-                  <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-                    <Users className="w-5 h-5 text-green-400" />
-                    Your Cards
-                  </h3>
+                  <h3 className="text-xl font-bold text-white mb-4">Your Cards</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {playerHand.map((card, index) => (
                       <Card
-                        key={card.id}
-                        className={`bg-white border-green-400 border-2 p-4 cursor-pointer transition-all duration-300 hover:scale-105 hover:shadow-lg animate-fade-in ${
-                          selectedCard?.id === card.id ? 'border-yellow-400 bg-yellow-50 scale-105' : ''
+                        key={index}
+                        className={`bg-white border-green-400 border-2 p-4 cursor-pointer transition-all duration-300 hover:scale-105 ${
+                          selectedCard === card ? 'border-yellow-400 bg-yellow-50 scale-105' : ''
                         }`}
-                        style={{ animationDelay: `${index * 100}ms` }}
-                        onClick={() => selectCard(card)}
+                        onClick={() => !hasSubmitted && setSelectedCard(card)}
                       >
-                        <div className="flex items-center justify-between mb-2">
-                          <Badge className="bg-green-600 text-white">ANSWER</Badge>
-                          <Trophy className="w-4 h-4 text-green-600" />
-                        </div>
                         <p className="text-black font-semibold text-sm md:text-base">
-                          {card.text}
+                          {card}
                         </p>
                       </Card>
                     ))}
                   </div>
-                </div>
-
-                {/* Action Card */}
-                <div>
-                  <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-                    <Trophy className="w-5 h-5 text-yellow-400 animate-pulse" />
-                    Action Card
-                  </h3>
-                  <Card className="bg-gradient-to-r from-yellow-400 to-yellow-600 border-yellow-400 border-4 p-4 max-w-md cursor-pointer hover:scale-105 transition-all duration-300 animate-pulse">
-                    <div className="flex items-center justify-between mb-2">
-                      <Badge className="bg-black text-yellow-400">ACTION</Badge>
-                      <Trophy className="w-4 h-4 text-black" />
-                    </div>
-                    <p className="text-black font-bold">
-                      {actionCard.text}
-                    </p>
-                  </Card>
                 </div>
 
                 {/* Submit Button */}
@@ -208,10 +355,10 @@ const Game = () => {
                   <Button 
                     onClick={submitCard}
                     disabled={!selectedCard || hasSubmitted}
-                    className={`px-8 py-4 text-lg font-bold transition-all duration-300 ${
+                    className={`px-8 py-4 text-lg font-bold ${
                       hasSubmitted 
                         ? 'bg-gray-600 cursor-not-allowed' 
-                        : 'bg-red-600 hover:bg-red-700 animate-pulse hover:scale-105'
+                        : 'bg-red-600 hover:bg-red-700'
                     }`}
                   >
                     {hasSubmitted ? '✅ SUBMITTED!' : '🚀 SUBMIT CARD'}
@@ -220,35 +367,100 @@ const Game = () => {
               </div>
             )}
 
-            {gameState === 'judging' && (
+            {room.gameState === 'voting' && (
               <div className="space-y-6">
                 <div className="text-center">
-                  <h3 className="text-2xl font-bold text-white mb-4 flex items-center justify-center gap-2">
-                    <Trophy className="w-6 h-6 text-yellow-400 animate-bounce" />
-                    JUDGING TIME!
-                    <Trophy className="w-6 h-6 text-yellow-400 animate-bounce" />
-                  </h3>
-                  <p className="text-green-400 text-lg">MessiGoat is picking the funniest combo!</p>
+                  <h3 className="text-2xl font-bold text-white mb-4">Vote on the Best Answers!</h3>
+                  <p className="text-green-400 text-lg">Rate each answer from 1-5 stars</p>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {submittedCards.map((card, index) => (
+                  {room.submittedCards
+                    .filter(card => card.playerId !== currentPlayerId)
+                    .map((card) => (
                     <Card
                       key={card.id}
-                      className="bg-white border-green-400 border-2 p-6 cursor-pointer hover:scale-105 transition-all duration-300 animate-slide-in-right"
-                      style={{ animationDelay: `${index * 200}ms` }}
-                      onClick={() => judgeCard(card)}
+                      className="bg-white border-green-400 border-2 p-6"
                     >
-                      <div className="flex items-center justify-between mb-3">
-                        <Badge className="bg-green-600 text-white">SUBMISSION</Badge>
-                        <Trophy className="w-4 h-4 text-green-600" />
-                      </div>
-                      <p className="text-black font-semibold text-lg">
+                      <p className="text-black font-semibold text-lg mb-4">
                         {card.text}
                       </p>
+                      <div className="flex gap-1 justify-center">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <Button
+                            key={star}
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => submitVote(card.id, star)}
+                            className={`p-1 ${
+                              votingScores[card.id] >= star 
+                                ? 'text-yellow-400' 
+                                : 'text-gray-400'
+                            }`}
+                          >
+                            <Star className="w-6 h-6 fill-current" />
+                          </Button>
+                        ))}
+                      </div>
                     </Card>
                   ))}
                 </div>
+
+                <div className="text-center">
+                  <Button 
+                    onClick={finishVoting}
+                    className="bg-green-600 hover:bg-green-700 px-8 py-4 text-lg font-bold"
+                  >
+                    ✅ FINISH VOTING
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {room.gameState === 'results' && (
+              <div className="text-center">
+                <Card className="bg-black/30 border-yellow-400 p-8 backdrop-blur-sm">
+                  <h2 className="text-3xl font-bold text-white mb-4">Round Results! 🎉</h2>
+                  <div className="space-y-2">
+                    {room.players
+                      .sort((a, b) => b.points - a.points)
+                      .map((player, index) => (
+                      <div key={player.id} className="flex justify-between items-center text-white">
+                        <span>{index + 1}. {player.name}</span>
+                        <span className="font-bold">{player.points} pts</span>
+                      </div>
+                    ))}
+                  </div>
+                </Card>
+              </div>
+            )}
+
+            {room.gameState === 'finished' && (
+              <div className="text-center">
+                <Card className="bg-black/30 border-yellow-400 p-8 backdrop-blur-sm">
+                  <h2 className="text-4xl font-bold text-white mb-6">🏆 GAME OVER! 🏆</h2>
+                  <div className="space-y-4">
+                    <h3 className="text-2xl text-yellow-400 font-bold">
+                      Winner: {room.players.sort((a, b) => b.points - a.points)[0]?.name}
+                    </h3>
+                    <div className="space-y-2">
+                      {room.players
+                        .sort((a, b) => b.points - a.points)
+                        .map((player, index) => (
+                        <div key={player.id} className="flex justify-between items-center text-white text-lg">
+                          <span>{index + 1}. {player.name}</span>
+                          <span className="font-bold">{player.points} pts</span>
+                        </div>
+                      ))}
+                    </div>
+                    <Button 
+                      onClick={() => navigate('/lobby')}
+                      className="bg-green-600 hover:bg-green-700 mt-6"
+                    >
+                      Back to Lobby
+                    </Button>
+                  </div>
+                </Card>
               </div>
             )}
           </div>
@@ -260,21 +472,19 @@ const Game = () => {
               <div className="p-4 border-b border-yellow-400">
                 <h3 className="text-lg font-bold text-white flex items-center gap-2">
                   <Trophy className="w-5 h-5 text-yellow-400" />
-                  Scoreboard
+                  Players ({room.players.length})
                 </h3>
               </div>
               <div className="p-4 space-y-3">
-                {players.map((player, index) => (
+                {room.players.map((player) => (
                   <div key={player.id} className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-sm ${
-                        player.isJudge ? 'bg-yellow-600' : 'bg-red-600'
-                      }`}>
-                        {player.name[0]}
+                      <div className="w-8 h-8 rounded-full bg-red-600 flex items-center justify-center text-white font-bold text-sm">
+                        {player.name[0].toUpperCase()}
                       </div>
-                      <span className={`font-semibold ${player.isJudge ? 'text-yellow-400' : 'text-white'}`}>
+                      <span className="font-semibold text-white">
                         {player.name}
-                        {player.isJudge && ' 👨‍⚖️'}
+                        {player.id === currentPlayerId && ' (You)'}
                       </span>
                     </div>
                     <Badge className="bg-green-600 text-white">
@@ -290,25 +500,21 @@ const Game = () => {
               <div className="p-4 border-b border-green-400">
                 <h3 className="text-lg font-bold text-white flex items-center gap-2">
                   <MessageSquare className="w-5 h-5 text-green-400" />
-                  Live Banter
+                  Live Chat
                 </h3>
               </div>
               
               <ScrollArea className="h-48 p-4">
                 <div className="space-y-3">
-                  {chatMessages.map((msg, index) => (
-                    <div 
-                      key={msg.id} 
-                      className="animate-fade-in"
-                      style={{ animationDelay: `${index * 100}ms` }}
-                    >
+                  {room.chatMessages.map((msg) => (
+                    <div key={msg.id} className="animate-fade-in">
                       <div className="flex items-start gap-2">
                         <div className="w-6 h-6 bg-red-600 rounded-full flex items-center justify-center text-white font-bold text-xs">
-                          {msg.player[0]}
+                          {msg.playerName[0].toUpperCase()}
                         </div>
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1">
-                            <span className="font-bold text-green-400 text-sm">{msg.player}</span>
+                            <span className="font-bold text-green-400 text-sm">{msg.playerName}</span>
                             <span className="text-xs text-gray-400">{msg.timestamp}</span>
                           </div>
                           <p className="text-white/90 text-sm">{msg.message}</p>
@@ -322,7 +528,7 @@ const Game = () => {
               <form onSubmit={sendMessage} className="p-4 border-t border-green-400">
                 <div className="flex gap-2">
                   <Input 
-                    placeholder="Roast away... ⚽🔥"
+                    placeholder="Type a message..."
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
                     className="bg-black/50 border-green-400 text-white placeholder-gray-400 text-sm"
