@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react';
+
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Users, Trophy, Plus, MessageSquare } from 'lucide-react';
+import { Users, Trophy, Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { usePrivy } from '@privy-io/react-auth';
 import PaymentHandler from '@/components/PaymentHandler';
@@ -13,19 +13,8 @@ const Lobby = () => {
   const navigate = useNavigate();
   const { authenticated } = usePrivy();
   
-  const [lobbies, setLobbies] = useState([
-    { id: 1, name: "PSG Fan Zone", players: 4, maxPlayers: 8, isPrivate: false, theme: "Football" },
-    { id: 2, name: "Messi Maniacs", players: 6, maxPlayers: 8, isPrivate: false, theme: "Football" },
-    { id: 3, name: "Real Madrid Roasters", players: 3, maxPlayers: 6, isPrivate: true, theme: "Football" },
-  ]);
-  
-  const [chatMessages, setChatMessages] = useState([
-    { id: 1, player: "CRFan007", message: "Ready to roast some Barca fans! 🔥", timestamp: "2m ago" },
-    { id: 2, player: "MessiGoat", message: "Bring it on! 🐐⚽", timestamp: "1m ago" },
-  ]);
-  
+  const [lobbies, setLobbies] = useState([]);
   const [currentLobby, setCurrentLobby] = useState(null);
-  const [newMessage, setNewMessage] = useState("");
   const [showCreateLobby, setShowCreateLobby] = useState(false);
   const [newLobbyName, setNewLobbyName] = useState("");
 
@@ -40,17 +29,20 @@ const Lobby = () => {
     navigate('/game');
   };
 
-  const sendMessage = (e) => {
-    e.preventDefault();
-    if (newMessage.trim()) {
-      const message = {
+  const handleCreateLobby = () => {
+    if (newLobbyName.trim()) {
+      const newLobby = {
         id: Date.now(),
-        player: "You",
-        message: newMessage,
-        timestamp: "now"
+        name: newLobbyName,
+        players: 1,
+        maxPlayers: 8,
+        isPrivate: false,
+        theme: "Football"
       };
-      setChatMessages(prev => [...prev, message]);
-      setNewMessage("");
+      setLobbies(prev => [...prev, newLobby]);
+      setNewLobbyName("");
+      setShowCreateLobby(false);
+      setCurrentLobby(newLobby);
     }
   };
 
@@ -77,13 +69,13 @@ const Lobby = () => {
           )}
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Lobbies List */}
-          <div className="lg:col-span-2 space-y-4">
-            <div className="flex justify-between items-center">
+        <div className="max-w-4xl mx-auto">
+          {/* Create Lobby Section */}
+          <div className="mb-8">
+            <div className="flex justify-between items-center mb-4">
               <h2 className="text-2xl font-bold text-white flex items-center gap-2">
                 <Users className="w-6 h-6 text-green-400" />
-                Open Lobbies
+                Game Lobbies
               </h2>
               <Button 
                 onClick={() => setShowCreateLobby(!showCreateLobby)}
@@ -96,7 +88,7 @@ const Lobby = () => {
 
             {/* Create Lobby Form */}
             {showCreateLobby && (
-              <Card className="bg-black/30 border-green-400 p-6 backdrop-blur-sm animate-slide-in-right">
+              <Card className="bg-black/30 border-green-400 p-6 backdrop-blur-sm animate-slide-in-right mb-6">
                 <h3 className="text-xl font-bold text-white mb-4">Create New Lobby</h3>
                 <div className="space-y-4">
                   <Input 
@@ -106,19 +98,41 @@ const Lobby = () => {
                     className="bg-black/50 border-green-400 text-white placeholder-gray-400"
                   />
                   <div className="flex gap-2">
-                    <Button className="bg-green-600 hover:bg-green-700 flex-1">
-                      🌍 PUBLIC
+                    <Button 
+                      onClick={handleCreateLobby}
+                      className="bg-green-600 hover:bg-green-700 flex-1"
+                      disabled={!newLobbyName.trim()}
+                    >
+                      🌍 CREATE PUBLIC LOBBY
                     </Button>
-                    <Button variant="outline" className="border-yellow-400 text-yellow-400 flex-1">
-                      🔒 PRIVATE
+                    <Button 
+                      onClick={() => setShowCreateLobby(false)}
+                      variant="outline" 
+                      className="border-gray-600 text-gray-400 flex-1"
+                    >
+                      Cancel
                     </Button>
                   </div>
                 </div>
               </Card>
             )}
+          </div>
 
-            {/* Lobby Cards */}
-            <div className="space-y-3">
+          {/* Lobbies List */}
+          {lobbies.length === 0 ? (
+            <Card className="bg-black/30 border-green-400 p-8 backdrop-blur-sm text-center">
+              <h3 className="text-xl font-bold text-white mb-2">No Active Lobbies</h3>
+              <p className="text-green-300 mb-4">Be the first to create a lobby and start the fun!</p>
+              <Button 
+                onClick={() => setShowCreateLobby(true)}
+                className="bg-red-600 hover:bg-red-700 text-white font-bold"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                CREATE FIRST LOBBY
+              </Button>
+            </Card>
+          ) : (
+            <div className="space-y-3 mb-8">
               {lobbies.map((lobby, index) => (
                 <Card 
                   key={lobby.id} 
@@ -155,85 +169,25 @@ const Lobby = () => {
                 </Card>
               ))}
             </div>
-          </div>
+          )}
 
-          {/* Chat & Current Lobby */}
-          <div className="space-y-4">
-            {/* Theme Voting */}
-            <Card className="bg-black/30 border-green-400 p-4 backdrop-blur-sm">
-              <h3 className="text-lg font-bold text-white mb-3 flex items-center gap-2">
-                <Trophy className="w-5 h-5 text-yellow-400" />
-                Vote Theme
-              </h3>
-              <div className="space-y-2">
-                <Button className="w-full bg-green-600 hover:bg-green-700 text-white font-bold">
-                  ⚽ FOOTBALL (Active)
-                </Button>
-                <Button variant="outline" className="w-full border-gray-600 text-gray-400" disabled>
-                  🏀 Basketball (Coming Soon)
-                </Button>
-                <Button variant="outline" className="w-full border-gray-600 text-gray-400" disabled>
-                  🏈 American Football (Coming Soon)
-                </Button>
-              </div>
-            </Card>
-
-            {/* Chat */}
-            <Card className="bg-black/30 border-green-400 backdrop-blur-sm">
-              <div className="p-4 border-b border-green-400">
-                <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                  <MessageSquare className="w-5 h-5 text-green-400" />
-                  Fan Banter
-                </h3>
-              </div>
-              
-              <ScrollArea className="h-64 p-4">
-                <div className="space-y-3">
-                  {chatMessages.map((msg, index) => (
-                    <div 
-                      key={msg.id} 
-                      className="animate-fade-in"
-                      style={{ animationDelay: `${index * 100}ms` }}
-                    >
-                      <div className="flex items-start gap-2">
-                        <div className="w-8 h-8 bg-red-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
-                          {msg.player[0]}
-                        </div>
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className="font-bold text-green-400">{msg.player}</span>
-                            <span className="text-xs text-gray-400">{msg.timestamp}</span>
-                          </div>
-                          <p className="text-white/90 text-sm">{msg.message}</p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </ScrollArea>
-              
-              <form onSubmit={sendMessage} className="p-4 border-t border-green-400">
-                <div className="flex gap-2">
-                  <Input 
-                    placeholder="Type your message... ⚽🔥🏆"
-                    value={newMessage}
-                    onChange={(e) => setNewMessage(e.target.value)}
-                    className="bg-black/50 border-green-400 text-white placeholder-gray-400"
-                  />
-                  <Button type="submit" className="bg-red-600 hover:bg-red-700">
-                    Send
-                  </Button>
-                </div>
-              </form>
-            </Card>
-
-            {/* Start Game */}
-            {currentLobby && (
-              <PaymentHandler onSuccess={handleStartGame} disabled={currentLobby.players < 3}>
-                {currentLobby.players < 3 ? '⏳ WAITING FOR PLAYERS' : '🚀 PAY & START GAME!'}
-              </PaymentHandler>
-            )}
-          </div>
+          {/* Start Game Button */}
+          {currentLobby && (
+            <div className="text-center">
+              <Card className="bg-black/30 border-yellow-400 p-6 backdrop-blur-sm mb-4">
+                <h3 className="text-xl font-bold text-white mb-2">Current Lobby: {currentLobby.name}</h3>
+                <p className="text-green-300 mb-4">
+                  {currentLobby.players}/{currentLobby.maxPlayers} players joined
+                </p>
+                <PaymentHandler 
+                  onSuccess={handleStartGame} 
+                  disabled={currentLobby.players < 2}
+                >
+                  {currentLobby.players < 2 ? '⏳ WAITING FOR MORE PLAYERS' : '🚀 PAY & START GAME!'}
+                </PaymentHandler>
+              </Card>
+            </div>
+          )}
         </div>
       </div>
     </div>
