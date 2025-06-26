@@ -4,9 +4,16 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Trophy, Users } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import WalletConnection from '@/components/WalletConnection';
 
 const Index = () => {
   const [showRules, setShowRules] = useState(false);
+  const navigate = useNavigate();
+
+  const handleJoinGame = () => {
+    navigate('/lobby');
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-green-900 via-green-800 to-navy-900 relative overflow-hidden">
@@ -41,13 +48,9 @@ const Index = () => {
 
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 mb-12 animate-fade-in animation-delay-500">
+          <WalletConnection />
           <Button 
-            size="lg" 
-            className="bg-red-600 hover:bg-red-700 text-white px-8 py-4 text-lg font-bold animate-pulse hover:animate-none transition-all duration-300 hover:scale-105"
-          >
-            🔥 CONNECT WALLET
-          </Button>
-          <Button 
+            onClick={handleJoinGame}
             size="lg" 
             variant="outline" 
             className="border-green-400 text-green-400 hover:bg-green-400 hover:text-black px-8 py-4 text-lg font-bold transition-all duration-300 hover:scale-105"
