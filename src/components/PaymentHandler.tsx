@@ -33,7 +33,7 @@ const PaymentHandler = ({ onSuccess, children, disabled = false }: PaymentHandle
     
     try {
       await sendTransaction({
-        to: ADMIN_WALLET,
+        to: ADMIN_WALLET as `0x${string}`,
         value: parseEther(GAME_ENTRY_FEE),
       });
 
