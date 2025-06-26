@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -19,7 +18,9 @@ const Lobby = () => {
   
   const [showCreateLobby, setShowCreateLobby] = useState(false);
   const [newLobbyName, setNewLobbyName] = useState("");
-  const [playerName, setPlayerName] = useState(user?.email?.split('@')[0] || 'Player');
+  const [playerName, setPlayerName] = useState(
+    user?.email?.address ? user.email.address.split('@')[0] : 'Player'
+  );
 
   const roomList = Object.values(rooms);
 
