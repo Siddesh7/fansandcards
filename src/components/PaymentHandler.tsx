@@ -32,10 +32,12 @@ const PaymentHandler = ({ onSuccess, children, disabled = false }: PaymentHandle
     setIsProcessing(true);
     
     try {
-      await sendTransaction({
+      const txHash = await sendTransaction({
         to: ADMIN_WALLET as `0x${string}`,
         value: parseEther(GAME_ENTRY_FEE),
       });
+
+      console.log('Transaction sent:', txHash);
 
       toast({
         title: "Payment Successful! 🎉",

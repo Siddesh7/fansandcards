@@ -33,4 +33,4 @@ export const wagmiConfig = createConfig({
 });
 
 export const ADMIN_WALLET = '0x4e6D595987572f20847a0bF739FC0d9bE32a98a2';
-export const GAME_ENTRY_FEE = '0.1'; // 0.1 CHZ
+export const GAME_ENTRY_FEE = '0.1';

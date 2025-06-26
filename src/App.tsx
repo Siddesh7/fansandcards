@@ -14,24 +14,31 @@ import Results from "./pages/Results";
 import CardCollection from "./pages/CardCollection";
 import NotFound from "./pages/NotFound";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: false,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 const App = () => (
-  <PrivyProvider
-    appId="cmbys4tbe00j4ld0nnspaqhgq"
-    config={{
-      appearance: {
-        theme: 'dark',
-        accentColor: '#10b981',
-        logo: 'https://images.unsplash.com/photo-1472396961693-142e6e269027?w=50&h=50&fit=crop&crop=center',
-      },
-      loginMethods: ['wallet', 'email'],
-      embeddedWallets: {
-        createOnLogin: 'users-without-wallets',
-      },
-    }}
-  >
-    <QueryClientProvider client={queryClient}>
+  <QueryClientProvider client={queryClient}>
+    <PrivyProvider
+      appId="cmbys4tbe00j4ld0nnspaqhgq"
+      config={{
+        appearance: {
+          theme: 'dark',
+          accentColor: '#10b981',
+          logo: 'https://images.unsplash.com/photo-1472396961693-142e6e269027?w=50&h=50&fit=crop&crop=center',
+        },
+        loginMethods: ['wallet', 'email'],
+        embeddedWallets: {
+          createOnLogin: 'users-without-wallets',
+        },
+      }}
+    >
       <WagmiProvider config={wagmiConfig}>
         <TooltipProvider>
           <Toaster />
@@ -43,14 +50,13 @@ const App = () => (
               <Route path="/game" element={<Game />} />
               <Route path="/results" element={<Results />} />
               <Route path="/collection" element={<CardCollection />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
         </TooltipProvider>
       </WagmiProvider>
-    </QueryClientProvider>
-  </PrivyProvider>
+    </PrivyProvider>
+  </QueryClientProvider>
 );
 
 export default App;
