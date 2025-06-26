@@ -5,8 +5,15 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Users, Trophy, Plus, MessageSquare } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { useAccount } from 'wagmi';
+import PaymentHandler from '@/components/PaymentHandler';
+import { GAME_ENTRY_FEE } from '@/lib/wagmi';
 
 const Lobby = () => {
+  const navigate = useNavigate();
+  const { isConnected } = useAccount();
+  
   const [lobbies, setLobbies] = useState([
     { id: 1, name: "PSG Fan Zone", players: 4, maxPlayers: 8, isPrivate: false, theme: "Football" },
     { id: 2, name: "Messi Maniacs", players: 6, maxPlayers: 8, isPrivate: false, theme: "Football" },
@@ -23,14 +30,15 @@ const Lobby = () => {
   const [showCreateLobby, setShowCreateLobby] = useState(false);
   const [newLobbyName, setNewLobbyName] = useState("");
 
-  const joinLobby = (lobby) => {
+  const handleJoinLobby = (lobby) => {
     setCurrentLobby(lobby);
-    // Simulate joining animation
-    setTimeout(() => {
-      setLobbies(prev => prev.map(l => 
-        l.id === lobby.id ? { ...l, players: l.players + 1 } : l
-      ));
-    }, 500);
+    setLobbies(prev => prev.map(l => 
+      l.id === lobby.id ? { ...l, players: l.players + 1 } : l
+    ));
+  };
+
+  const handleStartGame = () => {
+    navigate('/game');
   };
 
   const sendMessage = (e) => {
@@ -65,6 +73,9 @@ const Lobby = () => {
             Find your crew and start roasting!
             <Trophy className="w-5 h-5 animate-spin" />
           </p>
+          {!isConnected && (
+            <p className="text-yellow-400 mt-2">⚠️ Connect your wallet to join games</p>
+          )}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -129,20 +140,18 @@ const Lobby = () => {
                           <Users className="w-4 h-4" />
                           {lobby.players}/{lobby.maxPlayers} players
                         </span>
-                        <span className="text-yellow-400">💰 0.1 $CHZ entry</span>
+                        <span className="text-yellow-400">💰 {GAME_ENTRY_FEE} CHZ entry</span>
                       </div>
                     </div>
-                    <Button 
-                      onClick={() => joinLobby(lobby)}
-                      disabled={lobby.players >= lobby.maxPlayers}
-                      className={`ml-4 font-bold ${
-                        lobby.players >= lobby.maxPlayers 
-                          ? 'bg-gray-600 cursor-not-allowed' 
-                          : 'bg-red-600 hover:bg-red-700 animate-pulse'
-                      }`}
-                    >
-                      {lobby.players >= lobby.maxPlayers ? 'FULL' : 'JOIN'}
-                    </Button>
+                    {lobby.players >= lobby.maxPlayers ? (
+                      <Button disabled className="ml-4 font-bold bg-gray-600 cursor-not-allowed">
+                        FULL
+                      </Button>
+                    ) : (
+                      <PaymentHandler onSuccess={() => handleJoinLobby(lobby)} disabled={!isConnected}>
+                        PAY & JOIN
+                      </PaymentHandler>
+                    )}
                   </div>
                 </Card>
               ))}
@@ -221,12 +230,9 @@ const Lobby = () => {
 
             {/* Start Game */}
             {currentLobby && (
-              <Button 
-                className="w-full bg-yellow-600 hover:bg-yellow-700 text-black font-bold text-lg py-4 animate-pulse"
-                disabled={currentLobby.players < 3}
-              >
-                {currentLobby.players < 3 ? '⏳ WAITING FOR PLAYERS' : '🚀 START GAME!'}
-              </Button>
+              <PaymentHandler onSuccess={handleStartGame} disabled={currentLobby.players < 3}>
+                {currentLobby.players < 3 ? '⏳ WAITING FOR PLAYERS' : '🚀 PAY & START GAME!'}
+              </PaymentHandler>
             )}
           </div>
         </div>
