@@ -1,73 +1,190 @@
-# Welcome to your Lovable project
 
-## Project info
+# Sports Against Fans 🏆⚽
 
-**URL**: https://lovable.dev/projects/0edebcef-81aa-4200-a221-65ed618bc00e
+The funniest football card game where you roast rivals, win $CHZ and NFTs! Built for the Vibe Hacking Online Hackathon on Chiliz Chain.
 
-## How can I edit this code?
+## 🎮 Game Overview
 
-There are several ways of editing your application.
+Sports Against Fans is a hilarious, Cards Against Humanity-style card game designed for football fans. Players compete to create the funniest card combinations using football-themed prompts and answers, with strategic Action Cards adding chaos to the mix.
 
-**Use Lovable**
+### Key Features:
+- **3-8 Players**: Quick 10-15 minute matches
+- **Pay-to-Play**: 0.1 $CHZ entry fees for premium matches
+- **NFT Cards**: All cards are NFTs with AR effects
+- **Rewards**: Win $CHZ, Reward Points, and rare NFT cards
+- **Fan Tokens**: Special perks for Socios.com token holders
+- **Stadium Atmosphere**: Immersive UI with flares, crowds, and animations
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/0edebcef-81aa-4200-a221-65ed618bc00e) and start prompting.
+## 🚀 Quick Start
 
-Changes made via Lovable will be committed automatically to this repo.
+### Project URL
+**Live App**: https://0edebcef-81aa-4200-a221-65ed618bc00e.lovableproject.com
 
-**Use your preferred IDE**
+### Local Development
+1. Clone the repository
+2. Install dependencies: `npm install`
+3. Start dev server: `npm run dev`
+4. Open http://localhost:8080
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+## 🏗️ Tech Stack
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+- **Frontend**: React + TypeScript + Vite
+- **Styling**: Tailwind CSS + shadcn/ui
+- **Database**: Supabase (for non-blockchain data)
+- **Blockchain**: Chiliz Chain (handled by Cursor)
+- **Icons**: Lucide React
+- **State Management**: Tanstack Query
 
-Follow these steps:
+## 🎯 Game Screens
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+### 1. Landing Page (`/`)
+- Welcome screen with game explanation
+- Wallet connection (placeholder for Cursor)
+- Stadium atmosphere with animated flares and crowd
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+### 2. Lobby Screen (`/lobby`)
+- Create/join game lobbies
+- Theme voting (Football, Basketball, American Football)
+- Pre-game chat with football emojis
+- Real-time player status updates
 
-# Step 3: Install the necessary dependencies.
-npm i
+### 3. Game Screen (`/game`)
+- Main gameplay with Prompt/Answer/Action cards
+- 30-second timer with progress bar
+- Live chat for banter
+- Judge selection and voting
+- Animated card interactions
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
+### 4. Results Screen (`/results`)
+- Victory celebration with confetti
+- Rewards breakdown ($CHZ, Reward Points, NFT cards)
+- Match statistics and leaderboard
+- Play again options
 
-**Edit a file directly in GitHub**
+### 5. Card Collection (`/collection`)
+- View owned NFT cards by category
+- AR preview for rare cards
+- Buy card packs (placeholder)
+- Trade on Kayen Swap (placeholder)
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## 🎨 Design System
 
-**Use GitHub Codespaces**
+### Colors
+- **Pitch Green**: Primary football theme color
+- **Flare Red**: Accent color for actions and highlights  
+- **Navy Blue**: Secondary color for backgrounds
+- **Trophy Gold**: Rewards and achievements
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+### Animations
+- **Card Flip**: Trading card-style interactions
+- **Stadium Effects**: Flares, lights, and crowd movement
+- **Confetti**: Victory celebrations
+- **Pulse Effects**: Action cards and important buttons
 
-## What technologies are used for this project?
+### Typography
+- **Headlines**: Bold, uppercase stadium scoreboard style
+- **Body Text**: Clean, readable on mobile devices
+- **Tone**: Cheeky, irreverent football fan humor
 
-This project is built with:
+## 🔗 Integrations
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+### Supabase (Database)
+- **Lobbies**: Game room management
+- **Players**: User profiles and session data
+- **Game State**: Real-time game progress
+- **Chat**: Live messaging system
+- **Card Inventory**: UI display (not blockchain ownership)
+- **Match History**: Game results and statistics
 
-## How can I deploy this project?
+### Cursor (Blockchain) - Placeholder
+- Wallet connections (Socios Wallet/MetaMask)
+- $CHZ payments and rewards
+- NFT card ownership and trading
+- Fan Token integration
+- Kayen Swap marketplace
 
-Simply open [Lovable](https://lovable.dev/projects/0edebcef-81aa-4200-a221-65ed618bc00e) and click on Share -> Publish.
+## 📱 Mobile-First Design
 
-## Can I connect a custom domain to my Lovable project?
+The app is optimized for mobile devices since most sports fans use phones:
+- Touch-friendly card interactions
+- Responsive grid layouts
+- Readable text sizes
+- Optimized animations for performance
+- PWA-ready meta tags
 
-Yes, you can!
+## 🃏 Sample Card Content
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+### Prompt Cards (Black background, red border)
+- "___ is why we got relegated"
+- "The worst transfer signing was ___"
+- "The ultimate fan chant is about ___"
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+### Answer Cards (White background, green border)
+- "A drunk ultra with a megaphone"
+- "Neymar's diving masterclass"
+- "Messi's tax returns"
+- "VAR officials watching Netflix"
+
+### Action Cards (Gold background, special effects)
+- "Fan Frenzy: Double points this round!"
+- "Red Card: Block a player's submission"
+- "Steal a Card: Take opponent's card"
+
+## 🎯 Game Flow
+
+1. **Setup**: Players join lobby, pay 0.1 $CHZ entry fee
+2. **Dealing**: Each player gets 7 Answer Cards + 1 Action Card
+3. **Rounds**: 5 rounds total, ~10-15 minutes per match
+4. **Gameplay**: Read Prompt → Submit Answer → Judge picks winner
+5. **Scoring**: 1-2 points per round, Action Cards add strategy
+6. **Victory**: Highest score wins 50% $CHZ pot + NFT + 100 Reward Points
+
+## 🔧 Development Notes
+
+### Placeholder Features (for Cursor integration)
+- Wallet connection buttons
+- $CHZ payment processing
+- NFT card trading
+- Blockchain ownership verification
+- Fan Token staking
+
+### Supabase Schema
+See `src/lib/supabase.ts` for complete database schema and API functions.
+
+### Real-time Features
+- Lobby updates (players joining/leaving)
+- Game state synchronization
+- Live chat messages
+- Timer countdown
+
+## 🚀 Deployment
+
+The app is deployed on Lovable and ready for the hackathon. To deploy your own version:
+1. Connect to Supabase for database
+2. Set up Cursor for blockchain features
+3. Configure environment variables
+4. Deploy to your preferred platform
+
+## 🏆 Hackathon Goals
+
+Built for the **Vibe Hacking Online Hackathon** on Chiliz Chain, this project showcases:
+- Innovative use of Fan Tokens and NFTs
+- Engaging sports fan community features
+- Chiliz Chain integration for payments
+- Mobile-first design for accessibility
+- Real-time multiplayer gameplay
+
+## 🤝 Contributing
+
+This is a hackathon project built in record time! Areas for future development:
+- Complete Cursor blockchain integration
+- Advanced AR effects for NFT cards
+- Additional sports themes (Basketball, American Football)
+- Tournament mode with larger prizes
+- Social features and friend systems
+
+---
+
+**Made with ⚽ and 🔥 for football fans everywhere!**
+
+*Sports Against Fans - Where the beautiful game meets beautiful comedy.*
