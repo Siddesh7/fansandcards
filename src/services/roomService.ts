@@ -15,7 +15,7 @@ class RoomService {
       throw error;
     }
 
-    return data || [];
+    return (data || []).map(this.mapSupabaseToRoom);
   }
 
   async getRoom(roomId: string): Promise<GameRoom | null> {
@@ -30,11 +30,11 @@ class RoomService {
       return null;
     }
 
-    return data;
+    return this.mapSupabaseToRoom(data);
   }
 
   async createRoom(name: string, playerName: string, playerId: string): Promise<GameRoom> {
-    const newRoom: Omit<GameRoom, 'createdAt' | 'updatedAt'> = {
+    const newRoom = {
       id: Math.random().toString(36).substr(2, 9),
       name,
       players: [{
@@ -43,31 +43,19 @@ class RoomService {
         points: 0,
         isConnected: true,
       }],
-      maxPlayers: 8,
-      currentRound: 1,
-      totalRounds: 5,
-      gameState: 'waiting',
-      promptCard: '',
-      submittedCards: [],
-      chatMessages: [],
-      timeLeft: 30,
+      max_players: 8,
+      current_round: 1,
+      total_rounds: 5,
+      game_state: 'waiting',
+      prompt_card: '',
+      submitted_cards: [],
+      chat_messages: [],
+      time_left: 30,
     };
 
     const { data, error } = await supabase
       .from('game_rooms')
-      .insert([{
-        id: newRoom.id,
-        name: newRoom.name,
-        players: newRoom.players,
-        max_players: newRoom.maxPlayers,
-        current_round: newRoom.currentRound,
-        total_rounds: newRoom.totalRounds,
-        game_state: newRoom.gameState,
-        prompt_card: newRoom.promptCard,
-        submitted_cards: newRoom.submittedCards,
-        chat_messages: newRoom.chatMessages,
-        time_left: newRoom.timeLeft,
-      }])
+      .insert([newRoom])
       .select()
       .single();
 

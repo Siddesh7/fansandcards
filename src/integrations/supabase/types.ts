@@ -11,51 +11,48 @@ export type Database = {
     Tables: {
       game_rooms: {
         Row: {
+          chat_messages: Json
           created_at: string
-          current_players: number
-          entry_fee: number
+          current_round: number
+          game_state: string
           id: string
-          match_id: string
           max_players: number
-          start_time: string
-          status: string
-          team1: string
-          team1_logo: string
-          team2: string
-          team2_logo: string
-          total_pool: number
+          name: string
+          players: Json
+          prompt_card: string
+          submitted_cards: Json
+          time_left: number
+          total_rounds: number
           updated_at: string
         }
         Insert: {
+          chat_messages?: Json
           created_at?: string
-          current_players?: number
-          entry_fee?: number
-          id?: string
-          match_id: string
+          current_round?: number
+          game_state?: string
+          id: string
           max_players?: number
-          start_time: string
-          status?: string
-          team1: string
-          team1_logo: string
-          team2: string
-          team2_logo: string
-          total_pool?: number
+          name: string
+          players?: Json
+          prompt_card?: string
+          submitted_cards?: Json
+          time_left?: number
+          total_rounds?: number
           updated_at?: string
         }
         Update: {
+          chat_messages?: Json
           created_at?: string
-          current_players?: number
-          entry_fee?: number
+          current_round?: number
+          game_state?: string
           id?: string
-          match_id?: string
           max_players?: number
-          start_time?: string
-          status?: string
-          team1?: string
-          team1_logo?: string
-          team2?: string
-          team2_logo?: string
-          total_pool?: number
+          name?: string
+          players?: Json
+          prompt_card?: string
+          submitted_cards?: Json
+          time_left?: number
+          total_rounds?: number
           updated_at?: string
         }
         Relationships: []
@@ -91,15 +88,7 @@ export type Database = {
           room_id?: string
           team?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "match_events_room_id_fkey"
-            columns: ["room_id"]
-            isOneToOne: false
-            referencedRelation: "game_rooms"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       moment_cards: {
         Row: {
@@ -173,13 +162,6 @@ export type Database = {
             referencedRelation: "moment_cards"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "player_cards_room_id_fkey"
-            columns: ["room_id"]
-            isOneToOne: false
-            referencedRelation: "game_rooms"
-            referencedColumns: ["id"]
-          },
         ]
       }
       room_players: {
@@ -216,15 +198,7 @@ export type Database = {
           room_id?: string
           total_spent?: number
         }
-        Relationships: [
-          {
-            foreignKeyName: "room_players_room_id_fkey"
-            columns: ["room_id"]
-            isOneToOne: false
-            referencedRelation: "game_rooms"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       trade_offers: {
         Row: {
@@ -279,13 +253,6 @@ export type Database = {
             columns: ["requested_card_id"]
             isOneToOne: false
             referencedRelation: "moment_cards"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "trade_offers_room_id_fkey"
-            columns: ["room_id"]
-            isOneToOne: false
-            referencedRelation: "game_rooms"
             referencedColumns: ["id"]
           },
         ]
