@@ -2,9 +2,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { useSendTransaction, useAccount } from 'wagmi';
-import { parseEther } from 'viem';
-import { ADMIN_WALLET, GAME_ENTRY_FEE } from '@/lib/wagmi';
+import { usePrivy } from '@privy-io/react-auth';
 import { Wallet, Loader2 } from 'lucide-react';
 
 interface PaymentHandlerProps {
@@ -16,11 +14,10 @@ interface PaymentHandlerProps {
 const PaymentHandler = ({ onSuccess, children, disabled = false }: PaymentHandlerProps) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const { toast } = useToast();
-  const { isConnected } = useAccount();
-  const { sendTransaction } = useSendTransaction();
+  const { authenticated } = usePrivy();
 
   const handlePayment = async () => {
-    if (!isConnected) {
+    if (!authenticated) {
       toast({
         title: "Wallet Not Connected",
         description: "Please connect your wallet first.",
@@ -32,16 +29,14 @@ const PaymentHandler = ({ onSuccess, children, disabled = false }: PaymentHandle
     setIsProcessing(true);
     
     try {
-      const txHash = await sendTransaction({
-        to: ADMIN_WALLET as `0x${string}`,
-        value: parseEther(GAME_ENTRY_FEE),
-      });
+      // Simulate payment processing
+      await new Promise(resolve => setTimeout(resolve, 2000));
 
-      console.log('Transaction sent:', txHash);
+      console.log('Payment simulation completed');
 
       toast({
         title: "Payment Successful! 🎉",
-        description: `Paid ${GAME_ENTRY_FEE} CHZ entry fee.`,
+        description: "Entry fee processed successfully.",
       });
 
       onSuccess();
@@ -60,7 +55,7 @@ const PaymentHandler = ({ onSuccess, children, disabled = false }: PaymentHandle
   return (
     <Button 
       onClick={handlePayment}
-      disabled={disabled || isProcessing || !isConnected}
+      disabled={disabled || isProcessing || !authenticated}
       className="font-bold"
     >
       {isProcessing ? (

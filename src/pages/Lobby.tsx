@@ -6,13 +6,12 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Users, Trophy, Plus, MessageSquare } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useAccount } from 'wagmi';
+import { usePrivy } from '@privy-io/react-auth';
 import PaymentHandler from '@/components/PaymentHandler';
-import { GAME_ENTRY_FEE } from '@/lib/wagmi';
 
 const Lobby = () => {
   const navigate = useNavigate();
-  const { isConnected } = useAccount();
+  const { authenticated } = usePrivy();
   
   const [lobbies, setLobbies] = useState([
     { id: 1, name: "PSG Fan Zone", players: 4, maxPlayers: 8, isPrivate: false, theme: "Football" },
@@ -73,7 +72,7 @@ const Lobby = () => {
             Find your crew and start roasting!
             <Trophy className="w-5 h-5 animate-spin" />
           </p>
-          {!isConnected && (
+          {!authenticated && (
             <p className="text-yellow-400 mt-2">⚠️ Connect your wallet to join games</p>
           )}
         </div>
@@ -140,7 +139,7 @@ const Lobby = () => {
                           <Users className="w-4 h-4" />
                           {lobby.players}/{lobby.maxPlayers} players
                         </span>
-                        <span className="text-yellow-400">💰 {GAME_ENTRY_FEE} CHZ entry</span>
+                        <span className="text-yellow-400">💰 0.1 CHZ entry</span>
                       </div>
                     </div>
                     {lobby.players >= lobby.maxPlayers ? (
@@ -148,7 +147,7 @@ const Lobby = () => {
                         FULL
                       </Button>
                     ) : (
-                      <PaymentHandler onSuccess={() => handleJoinLobby(lobby)} disabled={!isConnected}>
+                      <PaymentHandler onSuccess={() => handleJoinLobby(lobby)} disabled={!authenticated}>
                         PAY & JOIN
                       </PaymentHandler>
                     )}
