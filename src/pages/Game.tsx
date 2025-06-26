@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -6,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
-import { Trophy, Clock, Users, MessageSquare, Football } from 'lucide-react';
+import { Trophy, Clock, Users, MessageSquare } from 'lucide-react';
 
 const Game = () => {
   const [gameState, setGameState] = useState('playing'); // 'playing', 'judging', 'results'
@@ -126,7 +125,7 @@ const Game = () => {
           </div>
           
           <div className="flex items-center gap-2">
-            <Football className="w-5 h-5 text-green-400 animate-spin" />
+            <Trophy className="w-5 h-5 text-green-400 animate-spin" />
             <span className="text-green-400 font-bold">FAN ZONE ACTIVE</span>
           </div>
         </div>
@@ -146,9 +145,9 @@ const Game = () => {
             <div className="text-center">
               <Card className="bg-black border-red-400 border-4 p-8 max-w-2xl mx-auto animate-fade-in">
                 <div className="flex items-center justify-center gap-2 mb-4">
-                  <Football className="w-6 h-6 text-red-400" />
+                  <Trophy className="w-6 h-6 text-red-400" />
                   <span className="text-red-400 font-bold">PROMPT CARD</span>
-                  <Football className="w-6 h-6 text-red-400" />
+                  <Trophy className="w-6 h-6 text-red-400" />
                 </div>
                 <h2 className="text-2xl md:text-3xl font-bold text-white text-center">
                   {promptCard.text}
@@ -177,7 +176,7 @@ const Game = () => {
                       >
                         <div className="flex items-center justify-between mb-2">
                           <Badge className="bg-green-600 text-white">ANSWER</Badge>
-                          <Football className="w-4 h-4 text-green-600" />
+                          <Trophy className="w-4 h-4 text-green-600" />
                         </div>
                         <p className="text-black font-semibold text-sm md:text-base">
                           {card.text}
@@ -242,7 +241,7 @@ const Game = () => {
                     >
                       <div className="flex items-center justify-between mb-3">
                         <Badge className="bg-green-600 text-white">SUBMISSION</Badge>
-                        <Football className="w-4 h-4 text-green-600" />
+                        <Trophy className="w-4 h-4 text-green-600" />
                       </div>
                       <p className="text-black font-semibold text-lg">
                         {card.text}

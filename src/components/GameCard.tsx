@@ -1,7 +1,7 @@
 
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Football } from 'lucide-react';
+import { Trophy } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface GameCardProps {
@@ -65,7 +65,7 @@ const GameCard = ({ card, isSelected, isSubmitted, onClick, className }: GameCar
         <Badge className={getBadgeStyle()}>
           {getTypeLabel()}
         </Badge>
-        <Football className="w-4 h-4" />
+        <Trophy className="w-4 h-4" />
       </div>
       
       <p className="font-semibold text-sm md:text-base min-h-[60px] flex items-center">

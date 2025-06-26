@@ -1,11 +1,10 @@
-
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Users, Trophy, Football, Plus, MessageSquare } from 'lucide-react';
+import { Users, Trophy, Plus, MessageSquare } from 'lucide-react';
 
 const Lobby = () => {
   const [lobbies, setLobbies] = useState([
@@ -62,9 +61,9 @@ const Lobby = () => {
         <div className="text-center mb-8 animate-fade-in">
           <h1 className="text-3xl md:text-5xl font-bold text-white mb-2">FAN ZONE LOBBIES</h1>
           <p className="text-green-300 text-lg flex items-center justify-center gap-2">
-            <Football className="w-5 h-5 animate-spin" />
+            <Trophy className="w-5 h-5 animate-spin" />
             Find your crew and start roasting!
-            <Football className="w-5 h-5 animate-spin" />
+            <Trophy className="w-5 h-5 animate-spin" />
           </p>
         </div>
 

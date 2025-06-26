@@ -1,10 +1,9 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Trophy, Football, Plus, Repeat } from 'lucide-react';
+import { Trophy, Plus, Repeat } from 'lucide-react';
 
 const CardCollection = () => {
   const [selectedCard, setSelectedCard] = useState(null);
@@ -76,7 +75,7 @@ const CardCollection = () => {
               {card.rarity}
             </Badge>
             <div className="flex items-center gap-1">
-              <Football className="w-4 h-4 text-current" />
+              <Trophy className="w-4 h-4 text-current" />
               {!card.owned && <span className="text-xs">🔒</span>}
             </div>
           </div>

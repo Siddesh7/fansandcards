@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Trophy, Users, Football } from 'lucide-react';
+import { Trophy, Users } from 'lucide-react';
 
 const Index = () => {
   const [showRules, setShowRules] = useState(false);
@@ -28,11 +28,11 @@ const Index = () => {
             SPORTS AGAINST FANS
           </h1>
           <div className="flex items-center justify-center gap-2 mb-4">
-            <Football className="w-8 h-8 text-green-400 animate-bounce" />
+            <Trophy className="w-8 h-8 text-green-400 animate-bounce" />
             <p className="text-xl md:text-2xl text-green-300 font-semibold">
               THE FUNNIEST FOOTBALL CARD GAME!
             </p>
-            <Football className="w-8 h-8 text-green-400 animate-bounce animation-delay-500" />
+            <Trophy className="w-8 h-8 text-green-400 animate-bounce animation-delay-500" />
           </div>
           <p className="text-lg md:text-xl text-white/90 mb-8 max-w-2xl">
             Match cards, roast rivals, win $CHZ and NFTs!
@@ -68,7 +68,7 @@ const Index = () => {
           </Card>
           
           <Card className="bg-black/30 border-red-400 p-6 text-center backdrop-blur-sm hover:scale-105 transition-all duration-300">
-            <Football className="w-12 h-12 text-red-400 mx-auto mb-4 animate-spin" />
+            <Trophy className="w-12 h-12 text-red-400 mx-auto mb-4 animate-spin" />
             <h3 className="text-xl font-bold text-white mb-2">ROAST RIVALS</h3>
             <p className="text-red-300">
               Hilarious football cards that'll make you laugh out loud
@@ -95,7 +95,7 @@ const Index = () => {
             <DialogContent className="bg-black/90 border-green-400 text-white max-w-2xl">
               <DialogHeader>
                 <DialogTitle className="text-2xl text-green-400 flex items-center gap-2">
-                  <Football className="w-6 h-6" />
+                  <Trophy className="w-6 h-6" />
                   Game Rules
                 </DialogTitle>
               </DialogHeader>

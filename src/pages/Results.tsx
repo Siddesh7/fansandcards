@@ -1,9 +1,8 @@
-
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Trophy, Users, Football, Plus, Repeat } from 'lucide-react';
+import { Trophy, Users, Plus, Repeat } from 'lucide-react';
 
 const Results = () => {
   const [showConfetti, setShowConfetti] = useState(false);
@@ -94,9 +93,9 @@ const Results = () => {
             <Trophy className="w-16 h-16 text-yellow-400 animate-bounce animation-delay-500" />
           </div>
           <div className="flex items-center justify-center gap-2 text-green-400 text-lg">
-            <Football className="w-5 h-5 animate-spin" />
+            <Trophy className="w-5 h-5 animate-spin" />
             <span>What a match! The crowd goes wild!</span>
-            <Football className="w-5 h-5 animate-spin" />
+            <Trophy className="w-5 h-5 animate-spin" />
           </div>
         </div>
 
@@ -155,7 +154,7 @@ const Results = () => {
             <Card className="bg-black/30 border-green-400 backdrop-blur-sm">
               <div className="p-6 border-b border-green-400">
                 <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-                  <Football className="w-6 h-6 text-green-400" />
+                  <Trophy className="w-6 h-6 text-green-400" />
                   Match Stats
                 </h2>
               </div>
