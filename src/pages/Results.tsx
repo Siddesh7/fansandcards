@@ -47,34 +47,32 @@ const Results = () => {
       
       {/* Confetti Animation */}
       {showConfetti && (
-        <>
-          <div className="absolute inset-0 pointer-events-none">
-            {[...Array(50)].map((_, i) => (
-              <div
-                key={i}
-                className="absolute w-2 h-2 bg-yellow-400 rounded-full animate-bounce"
-                style={{
-                  left: `${Math.random() * 100}%`,
-                  top: `${Math.random() * 100}%`,
-                  animationDelay: `${Math.random() * 2}s`,
-                  animationDuration: `${1 + Math.random()}s`
-                }}
-              />
-            ))}
-            {[...Array(30)].map((_, i) => (
-              <div
-                key={i + 50}
-                className="absolute w-2 h-2 bg-red-500 rounded-full animate-bounce"
-                style={{
-                  left: `${Math.random() * 100}%`,
-                  top: `${Math.random() * 100}%`,
-                  animationDelay: `${Math.random() * 2}s`,
-                  animationDuration: `${1 + Math.random()}s`
-                }}
-              />
-            ))}
-          </>
-        )}
+        <div className="absolute inset-0 pointer-events-none">
+          {[...Array(50)].map((_, i) => (
+            <div
+              key={i}
+              className="absolute w-2 h-2 bg-yellow-400 rounded-full animate-bounce"
+              style={{
+                left: `${Math.random() * 100}%`,
+                top: `${Math.random() * 100}%`,
+                animationDelay: `${Math.random() * 2}s`,
+                animationDuration: `${1 + Math.random()}s`
+              }}
+            />
+          ))}
+          {[...Array(30)].map((_, i) => (
+            <div
+              key={i + 50}
+              className="absolute w-2 h-2 bg-red-500 rounded-full animate-bounce"
+              style={{
+                left: `${Math.random() * 100}%`,
+                top: `${Math.random() * 100}%`,
+                animationDelay: `${Math.random() * 2}s`,
+                animationDuration: `${1 + Math.random()}s`
+              }}
+            />
+          ))}
+        </div>
       )}
       
       {/* Victory Lights */}
@@ -164,15 +162,15 @@ const Results = () => {
               <div className="p-6 space-y-4">
                 <div className="flex justify-between items-center">
                   <span className="text-white/80">Duration:</span>
-                  <span className="text-green-400 font-bold">{matchStats.duration}</span>
+                  <span className="text-green-400 font-bold">{matchResults.matchStats.duration}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-white/80">Funniest Card:</span>
-                  <span className="text-yellow-400 font-bold text-sm">"{matchStats.funniest}"</span>
+                  <span className="text-yellow-400 font-bold text-sm">"{matchResults.matchStats.funniest}"</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-white/80">Total Laughs:</span>
-                  <span className="text-red-400 font-bold">{matchStats.totalLaughs} 😂</span>
+                  <span className="text-red-400 font-bold">{matchResults.matchStats.totalLaughs} 😂</span>
                 </div>
               </div>
             </Card>
