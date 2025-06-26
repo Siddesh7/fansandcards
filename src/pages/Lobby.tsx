@@ -35,7 +35,7 @@ const Lobby = () => {
     return () => clearInterval(interval);
   }, [loadRooms]);
 
-  const handleCreateLobby = async () => {
+  const handleCreateLobbyWithPayment = async () => {
     if (!authenticated) {
       toast({
         title: "Authentication Required",
@@ -55,7 +55,6 @@ const Lobby = () => {
           title: "Room Created! 🎉",
           description: "Your room is ready. You can now start the game!",
         });
-        // Creator goes directly to game without payment
         navigate(`/game/${roomId}`);
       } catch (error) {
         toast({
@@ -72,15 +71,6 @@ const Lobby = () => {
   const handleJoinLobby = async (roomId: string) => {
     console.log('Attempting to join room:', roomId, 'with player:', playerName);
     
-    if (!authenticated) {
-      toast({
-        title: "Authentication Required",
-        description: "Please connect your wallet first.",
-        variant: "destructive",
-      });
-      return;
-    }
-
     if (!playerName.trim()) {
       toast({
         title: "Player Name Required",
@@ -106,6 +96,7 @@ const Lobby = () => {
         });
       }
     } catch (error) {
+      console.error('Failed to join room:', error);
       toast({
         title: "Failed to Join Room",
         description: "Please try again.",
@@ -234,20 +225,12 @@ const Lobby = () => {
                     disabled={!authenticated || isCreatingRoom}
                   />
                   <div className="flex gap-2">
-                    <Button 
-                      onClick={handleCreateLobby}
-                      className="bg-green-600 hover:bg-green-700 flex-1"
+                    <PaymentHandler 
+                      onSuccess={handleCreateLobbyWithPayment}
                       disabled={!authenticated || !newLobbyName.trim() || !playerName.trim() || isCreatingRoom}
                     >
-                      {isCreatingRoom ? (
-                        <>
-                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          Creating...
-                        </>
-                      ) : (
-                        '🌍 CREATE ROOM'
-                      )}
-                    </Button>
+                      🌍 PAY 0.1 CHZ & CREATE ROOM
+                    </PaymentHandler>
                     <Button 
                       onClick={() => setShowCreateLobby(false)}
                       variant="outline" 
