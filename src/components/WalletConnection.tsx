@@ -2,23 +2,15 @@
 import { usePrivy } from '@privy-io/react-auth';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { useNavigate } from 'react-router-dom';
 import { Wallet, LogOut } from 'lucide-react';
 
 const WalletConnection = () => {
   const { login, logout, ready, authenticated, user } = usePrivy();
   const { toast } = useToast();
-  const navigate = useNavigate();
 
   const handleConnect = async () => {
     try {
       await login();
-      toast({
-        title: "Wallet Connected! 🎉",
-        description: "Welcome to Sports Against Fans!",
-      });
-      // Navigate to lobby after successful connection
-      setTimeout(() => navigate('/lobby'), 1000);
     } catch (error) {
       toast({
         title: "Connection Failed",

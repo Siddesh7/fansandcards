@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -25,26 +26,61 @@ const Lobby = () => {
   const roomList = Object.values(rooms);
 
   const handleCreateLobby = () => {
+    if (!authenticated) {
+      toast({
+        title: "Authentication Required",
+        description: "Please connect your wallet to create a room.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (newLobbyName.trim() && playerName.trim()) {
       const roomId = createRoom(newLobbyName, playerName);
       setNewLobbyName("");
       setShowCreateLobby(false);
+      toast({
+        title: "Room Created! 🎉",
+        description: "Your room is ready. Inviting players...",
+      });
       navigate(`/game/${roomId}`);
     }
   };
 
   const handleJoinLobby = (roomId: string) => {
-    if (playerName.trim()) {
-      const success = joinRoom(roomId, playerName);
-      if (success) {
-        navigate(`/game/${roomId}`);
-      } else {
-        toast({
-          title: "Cannot Join Room",
-          description: "Room is full or doesn't exist.",
-          variant: "destructive",
-        });
-      }
+    console.log('Attempting to join room:', roomId, 'with player:', playerName);
+    
+    if (!authenticated) {
+      toast({
+        title: "Authentication Required",
+        description: "Please connect your wallet first.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!playerName.trim()) {
+      toast({
+        title: "Player Name Required",
+        description: "Please enter your player name.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const success = joinRoom(roomId, playerName);
+    if (success) {
+      toast({
+        title: "Joined Room! 🎮",
+        description: "Welcome to the game!",
+      });
+      navigate(`/game/${roomId}`);
+    } else {
+      toast({
+        title: "Cannot Join Room",
+        description: "Room is full or doesn't exist.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -76,7 +112,10 @@ const Lobby = () => {
             <Trophy className="w-5 h-5 animate-spin" />
           </p>
           {!authenticated && (
-            <p className="text-yellow-400 mt-2">⚠️ Connect your wallet to join games</p>
+            <div className="mt-4 p-4 bg-yellow-900/30 border border-yellow-400 rounded-lg">
+              <p className="text-yellow-400 font-bold">⚠️ Connect your wallet to create or join games</p>
+              <p className="text-yellow-300 text-sm mt-1">Authentication required for all game activities</p>
+            </div>
           )}
         </div>
 
@@ -92,7 +131,11 @@ const Lobby = () => {
                   value={playerName}
                   onChange={(e) => setPlayerName(e.target.value)}
                   className="bg-black/50 border-green-400 text-white placeholder-gray-400 max-w-xs"
+                  disabled={!authenticated}
                 />
+                {!authenticated && (
+                  <span className="text-yellow-400 text-sm">Connect wallet first</span>
+                )}
               </div>
             </Card>
           </div>
@@ -107,6 +150,7 @@ const Lobby = () => {
               <Button 
                 onClick={() => setShowCreateLobby(!showCreateLobby)}
                 className="bg-red-600 hover:bg-red-700 text-white font-bold"
+                disabled={!authenticated}
               >
                 <Plus className="w-4 h-4 mr-2" />
                 CREATE ROOM
@@ -123,12 +167,13 @@ const Lobby = () => {
                     value={newLobbyName}
                     onChange={(e) => setNewLobbyName(e.target.value)}
                     className="bg-black/50 border-green-400 text-white placeholder-gray-400"
+                    disabled={!authenticated}
                   />
                   <div className="flex gap-2">
                     <Button 
                       onClick={handleCreateLobby}
                       className="bg-green-600 hover:bg-green-700 flex-1"
-                      disabled={!newLobbyName.trim() || !playerName.trim()}
+                      disabled={!authenticated || !newLobbyName.trim() || !playerName.trim()}
                     >
                       🌍 CREATE ROOM
                     </Button>
@@ -153,6 +198,7 @@ const Lobby = () => {
               <Button 
                 onClick={() => setShowCreateLobby(true)}
                 className="bg-red-600 hover:bg-red-700 text-white font-bold"
+                disabled={!authenticated}
               >
                 <Plus className="w-4 h-4 mr-2" />
                 CREATE FIRST ROOM

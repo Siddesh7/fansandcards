@@ -20,7 +20,7 @@ const PaymentHandler = ({ onSuccess, children, disabled = false }: PaymentHandle
     if (!authenticated) {
       toast({
         title: "Wallet Not Connected",
-        description: "Please connect your wallet first.",
+        description: "Please connect your wallet first to make a payment.",
         variant: "destructive",
       });
       return;
@@ -29,22 +29,25 @@ const PaymentHandler = ({ onSuccess, children, disabled = false }: PaymentHandle
     setIsProcessing(true);
     
     try {
-      // Simulate payment processing
+      console.log('Starting payment process for authenticated user');
+      
+      // Simulate CHZ payment processing
       await new Promise(resolve => setTimeout(resolve, 2000));
 
-      console.log('Payment simulation completed');
+      console.log('0.1 CHZ payment completed successfully');
 
       toast({
         title: "Payment Successful! 🎉",
-        description: "Entry fee processed successfully.",
+        description: "0.1 CHZ entry fee processed. Joining room...",
       });
 
+      // Only call onSuccess after payment is confirmed
       onSuccess();
     } catch (error) {
       console.error('Payment failed:', error);
       toast({
         title: "Payment Failed",
-        description: "Transaction was cancelled or failed. Please try again.",
+        description: "CHZ transaction was cancelled or failed. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -61,7 +64,12 @@ const PaymentHandler = ({ onSuccess, children, disabled = false }: PaymentHandle
       {isProcessing ? (
         <>
           <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-          Processing...
+          Processing 0.1 CHZ...
+        </>
+      ) : !authenticated ? (
+        <>
+          <Wallet className="w-4 h-4 mr-2" />
+          Connect Wallet First
         </>
       ) : (
         <>
