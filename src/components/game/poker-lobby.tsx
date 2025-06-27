@@ -98,7 +98,7 @@ export const PokerLobby = ({
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.3 }}
-            className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl p-6 border-2 border-amber-500/30 shadow-xl"
+            className="bg-black/20 backdrop-blur-sm rounded-2xl p-6 border-2 border-none shadow-xl"
           >
             <h3 className="text-amber-400 font-bold text-xl mb-4 flex items-center gap-2">
               <Settings size={20} />
@@ -156,7 +156,7 @@ export const PokerLobby = ({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
-            className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl p-6 border-2 border-amber-500/30 shadow-xl"
+            className="bg-black/20 backdrop-blur-sm rounded-2xl p-6 border-2 border-none shadow-xl"
           >
             <h3 className="text-amber-400 font-bold text-xl mb-4 flex items-center gap-2">
               <Users size={20} />
@@ -221,7 +221,7 @@ export const PokerLobby = ({
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.5 }}
-            className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl p-6 border-2 border-amber-500/30 shadow-xl"
+            className="bg-black/20 backdrop-blur-sm rounded-2xl p-6 border-2 border-none shadow-xl"
           >
             <h3 className="text-amber-400 font-bold text-xl mb-4">
               Game Controls
@@ -283,7 +283,7 @@ export const PokerLobby = ({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.6 }}
-            className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl p-6 border-2 border-amber-500/30 shadow-xl"
+            className="bg-black/20 backdrop-blur-sm rounded-2xl p-6 border-2 border-none shadow-xl"
           >
             <h3 className="text-amber-400 font-bold text-xl mb-4 text-center">
               Sample Cards - Get Ready to Roast! 🔥
