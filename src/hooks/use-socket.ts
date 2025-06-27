@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { io, Socket } from "socket.io-client";
 import { Room, Game } from "../types/game";
 
-const SERVER_URL = "http://localhost:3001";
+const SERVER_URL = "https://fansadncard-backend.onrender.com";
 
 export const useSocket = () => {
   const socketRef = useRef<Socket | null>(null);

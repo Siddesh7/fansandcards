@@ -4,9 +4,6 @@ server/
 # Ignore deployment scripts
 scripts/
 
-# Ignore contract files
-contracts/
-
 # Ignore environment files
 .env*
 !.env.example
