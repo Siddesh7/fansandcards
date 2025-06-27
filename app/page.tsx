@@ -6,6 +6,8 @@ import { usePrivy } from "@privy-io/react-auth";
 import { Button } from "@/components/ui/button";
 import { useSocket } from "@/src/hooks/use-socket";
 import { GameCard } from "@/src/components/game/game-card";
+import { PokerTable } from "@/src/components/game/poker-table";
+import { PokerLobby } from "@/src/components/game/poker-lobby";
 import { Game } from "@/src/types/game";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -273,7 +275,7 @@ export default function Home() {
     console.log("📊 Sorted scores:", sortedScores);
 
     return (
-      <div className="min-h-screen bg-gradient-to-b from-green-900 via-green-800 to-navy-900 relative overflow-hidden">
+      <div className="min-h-screen bg-gradient-to-b from-green-900 via-green-800 to-green-900 relative overflow-hidden">
         {/* Stadium Background with Crowd */}
         <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1472396961693-142e6e269027')] bg-cover bg-center opacity-20"></div>
         <div className="relative z-10 p-4">
@@ -373,7 +375,7 @@ export default function Home() {
 
   if (!ready) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-green-900 via-green-800 to-navy-900 relative overflow-hidden">
+      <div className="min-h-screen bg-gradient-to-b from-green-900 via-green-800 to-green-900 relative overflow-hidden">
         {/* Stadium Background with Crowd */}
         <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1472396961693-142e6e269027')] bg-cover bg-center opacity-20"></div>
         <div className="relative z-10 flex items-center justify-center min-h-screen">
@@ -385,7 +387,7 @@ export default function Home() {
 
   if (!authenticated) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-green-900 via-green-800 to-navy-900 relative overflow-hidden">
+      <div className="min-h-screen bg-gradient-to-b from-green-900 via-green-800 to-green-900 relative overflow-hidden">
         {/* Stadium Background with Crowd */}
         <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1472396961693-142e6e269027')] bg-cover bg-center opacity-20"></div>
         <div className="relative z-10 flex items-center justify-center min-h-screen">
@@ -418,6 +420,21 @@ export default function Home() {
 
   // Game Screen
   if (currentGame) {
+    return (
+      <PokerTable
+        players={currentRoom?.players || []}
+        currentGame={currentGame}
+        currentPlayerId={playerId || undefined}
+        onCardSelect={handleCardSelect}
+        selectedCards={selectedCards}
+        onJudgePick={handleJudgePick}
+        onSubmitCards={handleSubmitCards}
+      />
+    );
+  }
+
+  // Game Screen (Old - keeping for backup)
+  if (false && currentGame) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-green-900 via-green-800 to-navy-900 relative overflow-hidden">
         {/* Stadium Background with Crowd */}
@@ -646,137 +663,23 @@ export default function Home() {
   // Room Lobby
   if (currentRoom) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-green-900 via-green-800 to-navy-900 relative overflow-hidden">
-        {/* Stadium Background with Crowd */}
-        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1472396961693-142e6e269027')] bg-cover bg-center opacity-20"></div>
-        <div className="relative z-10 p-4">
-          <div className="max-w-4xl mx-auto">
-            <div className="bg-black/20 backdrop-blur-sm rounded-lg p-6 mb-6">
-              <div className="flex justify-between items-center mb-4">
-                <div>
-                  <h1 className="text-3xl font-bold text-white">
-                    {currentRoom.name}
-                  </h1>
-                  <p className="text-white/70 font-mono text-lg">
-                    Room Code: {currentRoom.id.slice(-6).toUpperCase()}
-                  </p>
-                </div>
-                <div className="flex gap-2">
-                  <Button
-                    onClick={shareRoomCode}
-                    className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white"
-                  >
-                    {copied ? (
-                      <Check size={16} className="mr-2" />
-                    ) : (
-                      <Share2 size={16} className="mr-2" />
-                    )}
-                    {copied ? "Copied!" : "Invite Friends"}
-                  </Button>
-                  <Button
-                    onClick={handleLeaveRoom}
-                    variant="outline"
-                    className="border-red-500 text-red-400 hover:bg-red-500/20"
-                  >
-                    Leave Room
-                  </Button>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-4 text-white/80">
-                <span className="flex items-center gap-2">
-                  <Users size={16} />
-                  {currentRoom.players.length}/{currentRoom.maxPlayers} Players
-                </span>
-                <span className="flex items-center gap-2">
-                  {isConnected ? (
-                    <Wifi size={16} className="text-green-400" />
-                  ) : (
-                    <WifiOff size={16} className="text-red-400" />
-                  )}
-                  {isConnected ? "Connected" : "Disconnected"}
-                </span>
-              </div>
-            </div>
-
-            <div className="bg-black/20 backdrop-blur-sm rounded-lg p-6 mb-6">
-              <h2 className="text-xl font-bold text-white mb-4">Players</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {currentRoom.players.map((player) => (
-                  <div
-                    key={player.id}
-                    className={`p-4 rounded-lg border-2 ${
-                      player.id === playerId
-                        ? "border-yellow-400 bg-yellow-400/10"
-                        : "border-gray-600 bg-gray-600/10"
-                    }`}
-                  >
-                    <div className="flex justify-between items-center">
-                      <span className="text-white font-medium">
-                        {player.name}
-                      </span>
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm text-white/60">
-                          Score:{" "}
-                          {currentGame
-                            ? (currentGame as Game).scores?.[player.id] ??
-                              player.score ??
-                              0
-                            : player.score ?? 0}
-                        </span>
-                        {player.isReady && (
-                          <span className="text-green-400 text-sm">
-                            ✓ Ready
-                          </span>
-                        )}
-                        {!player.isConnected && (
-                          <span className="text-red-400 text-sm">
-                            ⚫ Offline
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="bg-black/20 backdrop-blur-sm rounded-lg p-6">
-              <div className="flex gap-4">
-                <Button
-                  onClick={() =>
-                    toggleReady(currentRoom.id, !currentPlayer?.isReady)
-                  }
-                  className={`${
-                    currentPlayer?.isReady
-                      ? "bg-green-600 hover:bg-green-700"
-                      : "bg-blue-600 hover:bg-blue-700"
-                  }`}
-                >
-                  {currentPlayer?.isReady ? "Not Ready" : "Ready Up"}
-                </Button>
-
-                {currentRoom.players.every((p) => p.isReady) &&
-                  currentRoom.players.length >= 2 && (
-                    <Button
-                      onClick={() => startGame(currentRoom.id)}
-                      className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-black font-bold"
-                    >
-                      <Play size={16} className="mr-2" />
-                      Start Game
-                    </Button>
-                  )}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <PokerLobby
+        room={currentRoom}
+        currentPlayerId={playerId || undefined}
+        isConnected={isConnected}
+        onToggleReady={() =>
+          toggleReady(currentRoom.id, !currentPlayer?.isReady)
+        }
+        onStartGame={() => startGame(currentRoom.id)}
+        onLeaveRoom={handleLeaveRoom}
+        sampleCards={sampleCards}
+      />
     );
   }
 
   // Main Lobby
   return (
-    <div className="min-h-screen bg-gradient-to-b from-green-900 via-green-800 to-navy-900 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-b from-green-900 via-green-800 to-green-900 relative overflow-hidden">
       {/* Stadium Background with Crowd */}
       <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1472396961693-142e6e269027')] bg-cover bg-center opacity-20"></div>
       <div className="relative z-10 p-4">

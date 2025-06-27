@@ -120,3 +120,57 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Poker Table Styles */
+@layer utilities {
+  .poker-felt {
+    background: radial-gradient(ellipse at center, #2d5a3d 0%, #1a3d2e 100%);
+  }
+
+  .poker-card-shadow {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25), 0 2px 4px rgba(0, 0, 0, 0.15);
+  }
+
+  .poker-card-hover {
+    transform: translateY(-8px) scale(1.05);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3), 0 4px 10px rgba(0, 0, 0, 0.2);
+  }
+
+  .poker-glow {
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.3), 0 0 40px rgba(255, 215, 0, 0.2),
+      0 0 60px rgba(255, 215, 0, 0.1);
+  }
+
+  .table-position-1 {
+    --position-angle: 0deg;
+  }
+  .table-position-2 {
+    --position-angle: 72deg;
+  }
+  .table-position-3 {
+    --position-angle: 144deg;
+  }
+  .table-position-4 {
+    --position-angle: 216deg;
+  }
+  .table-position-5 {
+    --position-angle: 288deg;
+  }
+
+  .card-flip {
+    transform-style: preserve-3d;
+    transition: transform 0.6s;
+  }
+
+  .card-flip.flipped {
+    transform: rotateY(180deg);
+  }
+
+  .card-face {
+    backface-visibility: hidden;
+  }
+
+  .card-back {
+    transform: rotateY(180deg);
+  }
+}
