@@ -69,7 +69,17 @@ export const PokerLobby = ({
             animate={{ opacity: 1, y: 0 }}
             className="text-4xl md:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-600 mb-4"
           >
-            ⚽ Fan Zone Roast Fest
+            <span className="relative">
+              <span className="text-amber-300">⚽</span>{" "}
+              <span className="bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500 bg-clip-text text-transparent font-black">
+                fans
+              </span>
+              <span className="text-white/70 font-light mx-2">&</span>
+              <span className="bg-gradient-to-r from-yellow-300 via-amber-400 to-orange-500 bg-clip-text text-transparent font-black">
+                cards
+              </span>{" "}
+              <span className="text-amber-300">⚽</span>
+            </span>
           </motion.h1>
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}

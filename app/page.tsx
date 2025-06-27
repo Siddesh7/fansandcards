@@ -200,7 +200,7 @@ export default function Home() {
     if (!currentRoom) return;
 
     const roomCode = currentRoom.id.slice(-6).toUpperCase(); // Use last 6 chars as room code
-    const text = `Join my Fan Zone Roast Fest game! Room Code: ${roomCode}`;
+    const text = `Join my fans & cards game! Room Code: ${roomCode}`;
 
     if (navigator.share && navigator.canShare({ text })) {
       try {
@@ -433,233 +433,6 @@ export default function Home() {
     );
   }
 
-  // Game Screen (Old - keeping for backup)
-  if (false && currentGame) {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-green-900 via-green-800 to-navy-900 relative overflow-hidden">
-        {/* Stadium Background with Crowd */}
-        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1472396961693-142e6e269027')] bg-cover bg-center opacity-20"></div>
-        <div className="relative z-10 p-4">
-          <div className="max-w-6xl mx-auto">
-            {/* Game Header */}
-            <div className="bg-black/20 backdrop-blur-sm rounded-lg p-6 mb-6">
-              <div className="flex justify-between items-center mb-4">
-                <div>
-                  <h1 className="text-3xl font-bold text-white">
-                    {currentRoom?.name}
-                  </h1>
-                  <p className="text-white/70">
-                    Round {currentGame.currentRound} of 5
-                  </p>
-                  <p className="text-white/50 text-sm">
-                    Room Code: {currentRoom?.id.slice(-6).toUpperCase()}
-                  </p>
-                </div>
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-2 text-white/80">
-                    <Clock size={16} />
-                    <span>{currentGame.timeLeft}s</span>
-                  </div>
-                  <Button
-                    onClick={shareRoomCode}
-                    variant="outline"
-                    className="border-yellow-400 text-yellow-400 hover:bg-yellow-400/20"
-                  >
-                    {copied ? <Check size={16} /> : <Share2 size={16} />}
-                    {copied ? "Copied!" : "Share"}
-                  </Button>
-                  <Button
-                    onClick={handleLeaveRoom}
-                    variant="outline"
-                    className="border-red-500 text-red-400 hover:bg-red-500/20"
-                  >
-                    Leave Game
-                  </Button>
-                </div>
-              </div>
-
-              {isPicker && (
-                <div className="bg-purple-500/20 border border-purple-400 rounded-lg p-3 mb-4">
-                  <div className="flex items-center gap-2 text-purple-100">
-                    <Star size={16} />
-                    <span className="font-bold">
-                      You are the PICKER this round! You judge the cards but
-                      don't submit any.
-                    </span>
-                  </div>
-                </div>
-              )}
-
-              {!isPicker && (
-                <div className="bg-blue-500/20 border border-blue-400 rounded-lg p-3 mb-4">
-                  <div className="flex items-center gap-2 text-blue-100">
-                    <Trophy size={16} />
-                    <span className="font-bold">
-                      Submit your best card! The picker will judge all
-                      submissions.
-                    </span>
-                  </div>
-                </div>
-              )}
-
-              {/* Debug Info - Remove later */}
-              <div className="bg-gray-900/50 text-xs text-white/60 p-2 rounded mb-4">
-                <p>Debug: Picker ID: {currentGame.currentJudge}</p>
-                <p>Debug: Your Player ID: {playerId}</p>
-                <p>Debug: Round State: {currentGame.roundState}</p>
-                <p>Debug: Round: {currentGame.currentRound}</p>
-                <p>Debug: Cards in Hand: {playerHand.length}</p>
-                <p>Debug: Game Scores: {JSON.stringify(currentGame.scores)}</p>
-                <p>Debug: Game Scores Type: {typeof currentGame.scores}</p>
-                <p>
-                  Debug: Room Player Scores:{" "}
-                  {JSON.stringify(
-                    currentRoom?.players.map((p) => ({
-                      id: p.id,
-                      name: p.name,
-                      score: p.score,
-                    }))
-                  )}
-                </p>
-              </div>
-            </div>
-
-            {/* Question Card */}
-            <div className="bg-black/20 backdrop-blur-sm rounded-lg p-6 mb-6 text-center">
-              <h2 className="text-2xl font-bold text-white mb-4">Question</h2>
-              <div className="bg-gray-800 rounded-lg p-6">
-                <p className="text-xl text-white font-medium">
-                  {currentGame.questionCard?.text || "Loading question..."}
-                </p>
-              </div>
-            </div>
-
-            {/* Game State Display */}
-            {currentGame.roundState === "submitting" && (
-              <div className="bg-black/20 backdrop-blur-sm rounded-lg p-6 mb-6">
-                <h3 className="text-xl font-bold text-white mb-4">Your Hand</h3>
-                {playerHand.length === 0 ? (
-                  <div className="text-center py-8 text-white/60">
-                    <p>No cards left in your hand!</p>
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-4">
-                    {playerHand.map((card) => (
-                      <GameCard
-                        key={card.id}
-                        card={card}
-                        isSelected={selectedCards.some((c) => c.id === card.id)}
-                        onClick={() => handleCardSelect(card)}
-                      />
-                    ))}
-                  </div>
-                )}
-
-                <div className="flex justify-between items-center">
-                  <p className="text-white/70">
-                    Select {currentGame.questionCard?.blanks || 1} card(s)
-                  </p>
-                  <Button
-                    onClick={handleSubmitCards}
-                    disabled={
-                      selectedCards.length !==
-                        (currentGame.questionCard?.blanks || 1) ||
-                      playerHand.length === 0
-                    }
-                    className="bg-green-600 hover:bg-green-700"
-                  >
-                    Submit Cards ({selectedCards.length}/
-                    {currentGame.questionCard?.blanks || 1})
-                  </Button>
-                </div>
-              </div>
-            )}
-
-            {currentGame.roundState === "judging" && isPicker && (
-              <div className="bg-black/20 backdrop-blur-sm rounded-lg p-6 mb-6">
-                <h3 className="text-xl font-bold text-white mb-4">
-                  Judge the Submissions
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {currentGame.submissions.map((submission, index) => (
-                    <div
-                      key={index}
-                      className="bg-gray-800 p-4 rounded-lg cursor-pointer hover:bg-gray-700 transition-colors"
-                      onClick={() => handleJudgePick(index)}
-                    >
-                      <div className="flex gap-2">
-                        {submission.cards.map((card, cardIndex) => (
-                          <GameCard key={cardIndex} card={card} size="sm" />
-                        ))}
-                      </div>
-                      <Button
-                        className="w-full mt-2"
-                        onClick={() => handleJudgePick(index)}
-                      >
-                        Choose This Answer
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {currentGame.roundState === "judging" && !isPicker && (
-              <div className="bg-black/20 backdrop-blur-sm rounded-lg p-6 mb-6 text-center">
-                <h3 className="text-xl font-bold text-white mb-2">
-                  Waiting for picker to choose...
-                </h3>
-                <p className="text-white/70">
-                  {
-                    currentRoom?.players.find(
-                      (p) => p.id === currentGame.currentJudge
-                    )?.name
-                  }{" "}
-                  is picking the best answer.
-                </p>
-              </div>
-            )}
-
-            {/* Scores */}
-            <div className="bg-black/20 backdrop-blur-sm rounded-lg p-6">
-              <h3 className="text-xl font-bold text-white mb-4">Scores</h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {currentRoom?.players.map((player) => {
-                  const gameScore = currentGame.scores?.[player.id];
-                  const roomScore = player.score;
-                  const finalScore =
-                    gameScore !== undefined ? gameScore : roomScore || 0;
-
-                  console.log(`Score for ${player.name} (${player.id}):`, {
-                    gameScore,
-                    roomScore,
-                    finalScore,
-                    currentGameScores: currentGame.scores,
-                  });
-
-                  return (
-                    <div key={player.id} className="text-center">
-                      <p className="text-white font-medium">{player.name}</p>
-                      <p className="text-2xl font-bold text-yellow-400">
-                        {finalScore}
-                      </p>
-                      <p className="text-xs text-white/40">
-                        G:{gameScore} R:{roomScore}
-                      </p>
-                      {player.id === currentGame.currentJudge && (
-                        <Star size={16} className="mx-auto text-purple-400" />
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   // Room Lobby
   if (currentRoom) {
     return (
@@ -685,26 +458,22 @@ export default function Home() {
       <div className="relative z-10 p-4">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-8">
-            <h1 className="text-5xl font-bold mb-4 bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent">
-              Fan Zone Roast Fest
-            </h1>
-            <p className="text-white/80 text-lg">
-              Welcome back,{" "}
-              {user?.google?.name || user?.email?.toString() || "Champion"}! 🏆
-            </p>
-
-            <div className="flex items-center justify-center gap-2 mt-4">
-              {isConnected ? (
-                <span className="flex items-center gap-2 text-green-400">
-                  <Wifi size={16} />
-                  Connected to server
+            <div className="relative mb-6">
+              <h1 className="text-6xl md:text-8xl font-black mb-2 relative">
+                <span className="bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500 bg-clip-text text-transparent drop-shadow-2xl">
+                  fans
                 </span>
-              ) : (
-                <span className="flex items-center gap-2 text-red-400">
-                  <WifiOff size={16} />
-                  Connecting to server...
+                <span className="mx-4 text-white/80 font-light text-5xl md:text-7xl">
+                  &
                 </span>
-              )}
+                <span className="bg-gradient-to-r from-yellow-300 via-amber-400 to-orange-500 bg-clip-text text-transparent drop-shadow-2xl">
+                  cards
+                </span>
+              </h1>
+              <div className="absolute -inset-4 bg-gradient-to-r from-amber-500/20 via-yellow-400/20 to-orange-500/20 blur-xl rounded-full opacity-60"></div>
+              <p className="text-lg md:text-xl text-amber-200/80 font-medium tracking-wider uppercase">
+                ⚽ Football Card Game ⚽
+              </p>
             </div>
           </div>
 
@@ -725,7 +494,7 @@ export default function Home() {
               Playing as: <span className="text-yellow-400">{playerName}</span>
             </h2>
             <p className="text-white/70 text-sm">
-              Ready to dominate the football roast fest? 🏆
+              Ready to dominate the football cards game? 🏆
             </p>
           </div>
 
@@ -792,57 +561,71 @@ export default function Home() {
                 <p>No active rooms. Create one to get started!</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {rooms.map((room) => (
                   <div
                     key={room.id}
-                    className="bg-gradient-to-br from-gray-800 to-gray-900 p-4 rounded-lg border border-gray-600 hover:border-yellow-400 transition-colors"
+                    className="relative  p-6 rounded-xl border-2 border-amber-500/30 hover:border-amber-400 hover:shadow-xl hover:shadow-amber-500/20 transition-all duration-300 backdrop-blur-sm group"
                   >
-                    <div className="flex justify-between items-start mb-2">
-                      <h3 className="text-white font-bold text-lg">
+                    {/* Decorative football pattern */}
+                    <div className="absolute top-2 right-2 text-amber-400/20 group-hover:text-amber-400/40 transition-colors">
+                      <svg
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                      >
+                        <path d="M12 2c5.514 0 10 4.486 10 10s-4.486 10-10 10S2 17.514 2 12 6.486 2 12 2zm0 2c-4.411 0-8 3.589-8 8s3.589 8 8 8 8-3.589 8-8-3.589-8-8-8zm-1 5l3 2-3 2-3-2 3-2z" />
+                      </svg>
+                    </div>
+
+                    <div className="flex justify-between items-start mb-3">
+                      <h3 className="text-white font-bold text-xl leading-tight pr-8">
                         {room.name}
                       </h3>
                       <span
-                        className={`text-xs px-2 py-1 rounded-full ${
+                        className={`text-xs px-3 py-1 rounded-full font-semibold uppercase tracking-wider ${
                           room.gameState === "waiting"
-                            ? "bg-green-500/20 text-green-400"
+                            ? "bg-green-500/30 text-green-300 border border-green-400/50"
                             : room.gameState === "playing"
-                            ? "bg-blue-500/20 text-blue-400"
-                            : "bg-gray-500/20 text-gray-400"
+                            ? "bg-amber-500/30 text-amber-300 border border-amber-400/50"
+                            : "bg-gray-500/30 text-gray-300 border border-gray-400/50"
                         }`}
                       >
                         {room.gameState}
                       </span>
                     </div>
 
-                    <div className="text-white/60 text-sm mb-3">
+                    <div className="text-amber-100/80 text-sm mb-4">
                       <div className="flex justify-between items-center">
-                        <span className="flex items-center gap-1">
-                          <Users size={14} />
-                          {room.players.length}/{room.maxPlayers}
+                        <span className="flex items-center gap-2 font-medium">
+                          <Users size={16} className="text-amber-400" />
+                          <span className="text-white">
+                            {room.players.length}/{room.maxPlayers}
+                          </span>
                         </span>
-                        <span className="text-xs font-mono">
+                        <span className="text-xs font-mono bg-black/30 px-2 py-1 rounded border border-amber-500/30 text-amber-300">
                           {room.id.slice(-6).toUpperCase()}
                         </span>
                       </div>
                     </div>
 
                     {room.players.length > 0 && (
-                      <div className="mb-3">
-                        <div className="text-xs text-white/50 mb-1">
+                      <div className="mb-4">
+                        <div className="text-xs text-amber-200/60 mb-2 font-medium uppercase tracking-wider">
                           Players:
                         </div>
-                        <div className="flex flex-wrap gap-1">
+                        <div className="flex flex-wrap gap-1.5">
                           {room.players.slice(0, 3).map((player) => (
                             <span
                               key={player.id}
-                              className="text-xs bg-white/10 px-2 py-1 rounded text-white/80"
+                              className="text-xs bg-gradient-to-r from-amber-500/20 to-yellow-500/20 border border-amber-400/30 px-2.5 py-1 rounded-full text-amber-100 font-medium"
                             >
                               {player.name}
                             </span>
                           ))}
                           {room.players.length > 3 && (
-                            <span className="text-xs bg-white/10 px-2 py-1 rounded text-white/80">
+                            <span className="text-xs bg-gradient-to-r from-amber-500/20 to-yellow-500/20 border border-amber-400/30 px-2.5 py-1 rounded-full text-amber-100 font-medium">
                               +{room.players.length - 3} more
                             </span>
                           )}
@@ -856,7 +639,8 @@ export default function Home() {
                         room.players.length >= room.maxPlayers ||
                         !playerName.trim()
                       }
-                      className="w-full"
+                      variant="outline"
+                      className="w-full  text-black font-bold py-3 text-sm shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
                     >
                       Join Game
                     </Button>
