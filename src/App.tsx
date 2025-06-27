@@ -1,10 +1,9 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { PrivyProvider } from '@privy-io/react-auth';
+import { PrivyProvider } from "@privy-io/react-auth";
 import Index from "./pages/Index";
 import Lobby from "./pages/Lobby";
 import Game from "./pages/Game";
@@ -12,7 +11,6 @@ import Results from "./pages/Results";
 import CardCollection from "./pages/CardCollection";
 import NotFound from "./pages/NotFound";
 import { RoomProvider } from "./contexts/RoomContext";
-
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -23,21 +21,21 @@ const queryClient = new QueryClient({
 });
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <PrivyProvider
-      appId="cmbys4tbe00j4ld0nnspaqhgq"
-      config={{
-        appearance: {
-          theme: 'dark',
-          accentColor: '#10b981',
-          logo: 'https://images.unsplash.com/photo-1472396961693-142e6e269027?w=50&h=50&fit=crop&crop=center',
-        },
-        loginMethods: ['wallet', 'email'],
-        embeddedWallets: {
-          createOnLogin: 'users-without-wallets',
-        },
-      }}
-    >
+  <PrivyProvider
+    appId="cmbys4tbe00j4ld0nnspaqhgq"
+    config={{
+      appearance: {
+        theme: "dark",
+        accentColor: "#10b981",
+        logo: "https://images.unsplash.com/photo-1472396961693-142e6e269027?w=50&h=50&fit=crop&crop=center",
+      },
+      loginMethods: ["wallet", "email"],
+      embeddedWallets: {
+        createOnLogin: "users-without-wallets",
+      },
+    }}
+  >
+    <QueryClientProvider client={queryClient}>
       <RoomProvider>
         <TooltipProvider>
           <Toaster />
@@ -54,8 +52,8 @@ const App = () => (
           </BrowserRouter>
         </TooltipProvider>
       </RoomProvider>
-    </PrivyProvider>
-  </QueryClientProvider>
+    </QueryClientProvider>
+  </PrivyProvider>
 );
 
 export default App;

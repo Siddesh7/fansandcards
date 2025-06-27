@@ -1,26 +1,25 @@
-
-import { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Users, Trophy, Plus, Copy, Loader2 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import { usePrivy } from '@privy-io/react-auth';
-import { useToast } from '@/hooks/use-toast';
-import PaymentHandler from '@/components/PaymentHandler';
-import { useRoom } from '@/contexts/RoomContext';
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Users, Trophy, Plus, Copy, Loader2 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { usePrivy } from "@privy-io/react-auth";
+import { useToast } from "@/hooks/use-toast";
+import SimplePaymentHandler from "@/components/SimplePaymentHandler";
+import { useRoom } from "@/contexts/RoomContext";
 
 const Lobby = () => {
   const navigate = useNavigate();
   const { authenticated, user } = usePrivy();
   const { toast } = useToast();
   const { rooms, loading, error, createRoom, joinRoom, loadRooms } = useRoom();
-  
+
   const [showCreateLobby, setShowCreateLobby] = useState(false);
   const [newLobbyName, setNewLobbyName] = useState("");
   const [playerName, setPlayerName] = useState(
-    user?.email?.address ? user.email.address.split('@')[0] : 'Player'
+    user?.email?.address ? user.email.address.split("@")[0] : "Player"
   );
   const [isCreatingRoom, setIsCreatingRoom] = useState(false);
 
@@ -69,8 +68,8 @@ const Lobby = () => {
   };
 
   const handleJoinLobby = async (roomId: string) => {
-    console.log('Attempting to join room:', roomId, 'with player:', playerName);
-    
+    console.log("Attempting to join room:", roomId, "with player:", playerName);
+
     if (!playerName.trim()) {
       toast({
         title: "Player Name Required",
@@ -96,7 +95,7 @@ const Lobby = () => {
         });
       }
     } catch (error) {
-      console.error('Failed to join room:', error);
+      console.error("Failed to join room:", error);
       toast({
         title: "Failed to Join Room",
         description: "Please try again.",
@@ -129,15 +128,17 @@ const Lobby = () => {
     <div className="min-h-screen bg-gradient-to-b from-green-900 via-green-800 to-navy-900 relative">
       {/* Stadium Background */}
       <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1466721591366-2d5fba72006d')] bg-cover bg-center opacity-15"></div>
-      
+
       {/* Animated Stadium Lights */}
       <div className="absolute top-0 left-1/4 w-32 h-32 bg-white/10 rounded-full blur-3xl animate-pulse"></div>
       <div className="absolute top-20 right-1/4 w-32 h-32 bg-white/10 rounded-full blur-3xl animate-pulse animation-delay-1000"></div>
-      
+
       <div className="relative z-10 container mx-auto px-4 py-8">
         {/* Header */}
         <div className="text-center mb-8 animate-fade-in">
-          <h1 className="text-3xl md:text-5xl font-bold text-white mb-2">FAN ZONE LOBBIES</h1>
+          <h1 className="text-3xl md:text-5xl font-bold text-white mb-2">
+            FAN ZONE LOBBIES
+          </h1>
           <p className="text-green-300 text-lg flex items-center justify-center gap-2">
             <Trophy className="w-5 h-5 animate-spin" />
             Find your crew and start roasting!
@@ -145,14 +146,18 @@ const Lobby = () => {
           </p>
           {!authenticated && (
             <div className="mt-4 p-4 bg-yellow-900/30 border border-yellow-400 rounded-lg">
-              <p className="text-yellow-400 font-bold">⚠️ Connect your wallet to create or join games</p>
-              <p className="text-yellow-300 text-sm mt-1">Authentication required for all game activities</p>
+              <p className="text-yellow-400 font-bold">
+                ⚠️ Connect your wallet to create or join games
+              </p>
+              <p className="text-yellow-300 text-sm mt-1">
+                Authentication required for all game activities
+              </p>
             </div>
           )}
           {error && (
             <div className="mt-4 p-4 bg-red-900/30 border border-red-400 rounded-lg">
               <p className="text-red-400 font-bold">Error: {error}</p>
-              <Button 
+              <Button
                 onClick={loadRooms}
                 variant="outline"
                 size="sm"
@@ -169,8 +174,10 @@ const Lobby = () => {
           <div className="mb-6">
             <Card className="bg-black/30 border-green-400 p-4 backdrop-blur-sm">
               <div className="flex gap-4 items-center">
-                <label htmlFor="playerName" className="text-white font-bold">Your Name:</label>
-                <Input 
+                <label htmlFor="playerName" className="text-white font-bold">
+                  Your Name:
+                </label>
+                <Input
                   id="playerName"
                   placeholder="Enter your name"
                   value={playerName}
@@ -179,7 +186,9 @@ const Lobby = () => {
                   disabled={!authenticated}
                 />
                 {!authenticated && (
-                  <span className="text-yellow-400 text-sm">Connect wallet first</span>
+                  <span className="text-yellow-400 text-sm">
+                    Connect wallet first
+                  </span>
                 )}
               </div>
             </Card>
@@ -191,9 +200,11 @@ const Lobby = () => {
               <h2 className="text-2xl font-bold text-white flex items-center gap-2">
                 <Users className="w-6 h-6 text-green-400" />
                 Game Rooms
-                {loading && <Loader2 className="w-4 h-4 animate-spin text-green-400" />}
+                {loading && (
+                  <Loader2 className="w-4 h-4 animate-spin text-green-400" />
+                )}
               </h2>
-              <Button 
+              <Button
                 onClick={() => setShowCreateLobby(!showCreateLobby)}
                 className="bg-red-600 hover:bg-red-700 text-white font-bold"
                 disabled={!authenticated || isCreatingRoom}
@@ -215,9 +226,11 @@ const Lobby = () => {
             {/* Create Lobby Form */}
             {showCreateLobby && (
               <Card className="bg-black/30 border-green-400 p-6 backdrop-blur-sm animate-slide-in-right mb-6">
-                <h3 className="text-xl font-bold text-white mb-4">Create New Room</h3>
+                <h3 className="text-xl font-bold text-white mb-4">
+                  Create New Room
+                </h3>
                 <div className="space-y-4">
-                  <Input 
+                  <Input
                     placeholder="Room Name (e.g., 'Arsenal Army')"
                     value={newLobbyName}
                     onChange={(e) => setNewLobbyName(e.target.value)}
@@ -225,15 +238,20 @@ const Lobby = () => {
                     disabled={!authenticated || isCreatingRoom}
                   />
                   <div className="flex gap-2">
-                    <PaymentHandler 
+                    <SimplePaymentHandler
                       onSuccess={handleCreateLobbyWithPayment}
-                      disabled={!authenticated || !newLobbyName.trim() || !playerName.trim() || isCreatingRoom}
+                      disabled={
+                        !authenticated ||
+                        !newLobbyName.trim() ||
+                        !playerName.trim() ||
+                        isCreatingRoom
+                      }
                     >
                       🌍 PAY 0.1 CHZ & CREATE ROOM
-                    </PaymentHandler>
-                    <Button 
+                    </SimplePaymentHandler>
+                    <Button
                       onClick={() => setShowCreateLobby(false)}
-                      variant="outline" 
+                      variant="outline"
                       className="border-gray-600 text-gray-400 flex-1"
                       disabled={isCreatingRoom}
                     >
@@ -248,9 +266,13 @@ const Lobby = () => {
           {/* Rooms List */}
           {roomList.length === 0 ? (
             <Card className="bg-black/30 border-green-400 p-8 backdrop-blur-sm text-center">
-              <h3 className="text-xl font-bold text-white mb-2">No Active Rooms</h3>
-              <p className="text-green-300 mb-4">Be the first to create a room and start the fun!</p>
-              <Button 
+              <h3 className="text-xl font-bold text-white mb-2">
+                No Active Rooms
+              </h3>
+              <p className="text-green-300 mb-4">
+                Be the first to create a room and start the fun!
+              </p>
+              <Button
                 onClick={() => setShowCreateLobby(true)}
                 className="bg-red-600 hover:bg-red-700 text-white font-bold"
                 disabled={!authenticated}
@@ -262,22 +284,30 @@ const Lobby = () => {
           ) : (
             <div className="space-y-3 mb-8">
               {roomList.map((room, index) => (
-                <Card 
-                  key={room.id} 
+                <Card
+                  key={room.id}
                   className="bg-black/30 border-green-400 p-4 backdrop-blur-sm transition-all duration-300 animate-slide-in-right"
                   style={{ animationDelay: `${index * 100}ms` }}
                 >
                   <div className="flex justify-between items-center">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
-                        <h3 className="text-xl font-bold text-white">{room.name}</h3>
-                        <Badge className="bg-green-600 text-white">⚽ Football</Badge>
-                        <Badge 
+                        <h3 className="text-xl font-bold text-white">
+                          {room.name}
+                        </h3>
+                        <Badge className="bg-green-600 text-white">
+                          ⚽ Football
+                        </Badge>
+                        <Badge
                           className={`${
-                            room.gameState === 'waiting' ? 'bg-yellow-600' : 'bg-red-600'
+                            room.gameState === "waiting"
+                              ? "bg-yellow-600"
+                              : "bg-red-600"
                           } text-white`}
                         >
-                          {room.gameState === 'waiting' ? '⏳ WAITING' : '🎮 PLAYING'}
+                          {room.gameState === "waiting"
+                            ? "⏳ WAITING"
+                            : "🎮 PLAYING"}
                         </Badge>
                       </div>
                       <div className="flex items-center gap-4 text-sm">
@@ -285,10 +315,12 @@ const Lobby = () => {
                           <Users className="w-4 h-4" />
                           {room.players.length}/{room.maxPlayers} players
                         </span>
-                        <span className="text-yellow-400">💰 0.1 CHZ entry</span>
+                        <span className="text-yellow-400">
+                          💰 0.1 CHZ entry
+                        </span>
                       </div>
                     </div>
-                    
+
                     <div className="flex gap-2">
                       <Button
                         onClick={() => copyRoomLink(room.id)}
@@ -298,18 +330,21 @@ const Lobby = () => {
                       >
                         <Copy className="w-4 h-4" />
                       </Button>
-                      
+
                       {room.players.length >= room.maxPlayers ? (
-                        <Button disabled className="font-bold bg-gray-600 cursor-not-allowed">
+                        <Button
+                          disabled
+                          className="font-bold bg-gray-600 cursor-not-allowed"
+                        >
                           FULL
                         </Button>
                       ) : (
-                        <PaymentHandler 
-                          onSuccess={() => handleJoinLobby(room.id)} 
+                        <SimplePaymentHandler
+                          onSuccess={() => handleJoinLobby(room.id)}
                           disabled={!authenticated || !playerName.trim()}
                         >
                           PAY & JOIN
-                        </PaymentHandler>
+                        </SimplePaymentHandler>
                       )}
                     </div>
                   </div>

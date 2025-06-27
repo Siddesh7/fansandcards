@@ -1,9 +1,9 @@
-
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { useToast } from '@/hooks/use-toast';
-import { usePrivy } from '@privy-io/react-auth';
-import { Wallet, Loader2 } from 'lucide-react';
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
+import { usePrivy } from "@privy-io/react-auth";
+import { Wallet, Loader2 } from "lucide-react";
+import { GAME_CONFIG } from "@/lib/constants";
 
 interface PaymentHandlerProps {
   onSuccess: () => void;
@@ -11,7 +11,11 @@ interface PaymentHandlerProps {
   disabled?: boolean;
 }
 
-const PaymentHandler = ({ onSuccess, children, disabled = false }: PaymentHandlerProps) => {
+const PaymentHandler = ({
+  onSuccess,
+  children,
+  disabled = false,
+}: PaymentHandlerProps) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const { toast } = useToast();
   const { authenticated, user, sendTransaction } = usePrivy();
@@ -26,43 +30,56 @@ const PaymentHandler = ({ onSuccess, children, disabled = false }: PaymentHandle
       return;
     }
 
+    if (!sendTransaction) {
+      toast({
+        title: "Transaction Not Available",
+        description:
+          "Send transaction method is not available. Please try reconnecting your wallet.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsProcessing(true);
-    
+
     try {
-      console.log('Starting CHZ payment process for authenticated user:', user.id);
-      
-      // Get the user's wallet
-      const wallet = user.linkedAccounts.find(account => account.type === 'wallet');
-      if (!wallet) {
-        throw new Error('No wallet found');
-      }
+      console.log(
+        "Starting CHZ payment process for authenticated user:",
+        user.id
+      );
 
-      // Prepare CHZ transaction (0.1 CHZ = 100000000000000000 wei)
-      const transactionRequest = {
-        to: '0x0000000000000000000000000000000000000000', // Replace with your treasury address
-        value: '0x16345785d8a0000', // 0.1 CHZ in hex
-        data: '0x',
-      };
+      // Send the CHZ transaction using Privy's sendTransaction
+      const txResponse = await sendTransaction({
+        to: GAME_CONFIG.TREASURY_ADDRESS,
+        value: GAME_CONFIG.ENTRY_FEE_WEI,
+      });
 
-      console.log('Sending CHZ transaction:', transactionRequest);
-
-      // Send the transaction using Privy
-      const txHash = await sendTransaction(transactionRequest);
-      
-      console.log('CHZ transaction successful:', txHash);
+      console.log("CHZ transaction successful:", txResponse);
 
       toast({
         title: "Payment Successful! 🎉",
-        description: "0.1 CHZ entry fee processed. Joining room...",
+        description: `${GAME_CONFIG.ENTRY_FEE} CHZ entry fee processed. Joining room...`,
       });
 
       // Call onSuccess after payment is confirmed
       onSuccess();
-    } catch (error) {
-      console.error('CHZ payment failed:', error);
+    } catch (error: any) {
+      console.error("CHZ payment failed:", error);
+
+      let errorMessage =
+        "CHZ transaction was cancelled or failed. Please try again.";
+      if (error.message?.includes("insufficient funds")) {
+        errorMessage =
+          "Insufficient CHZ balance. Please add funds to your wallet.";
+      } else if (error.message?.includes("user rejected")) {
+        errorMessage = "Transaction was cancelled by user.";
+      } else if (error.message?.includes("denied")) {
+        errorMessage = "Transaction was denied. Please try again.";
+      }
+
       toast({
         title: "Payment Failed",
-        description: error.message || "CHZ transaction was cancelled or failed. Please try again.",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -71,7 +88,7 @@ const PaymentHandler = ({ onSuccess, children, disabled = false }: PaymentHandle
   };
 
   return (
-    <Button 
+    <Button
       onClick={handlePayment}
       disabled={disabled || isProcessing || !authenticated}
       className="font-bold bg-red-600 hover:bg-red-700"

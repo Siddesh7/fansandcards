@@ -1,8 +1,7 @@
-
-import { usePrivy } from '@privy-io/react-auth';
-import { Button } from '@/components/ui/button';
-import { useToast } from '@/hooks/use-toast';
-import { Wallet, LogOut } from 'lucide-react';
+import { usePrivy } from "@privy-io/react-auth";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
+import { Wallet, LogOut } from "lucide-react";
 
 const WalletConnection = () => {
   const { login, logout, ready, authenticated, user } = usePrivy();
@@ -28,14 +27,14 @@ const WalletConnection = () => {
         description: "Thanks for playing!",
       });
     } catch (error) {
-      console.error('Logout error:', error);
+      console.error("Logout error:", error);
     }
   };
 
   if (!ready) {
     return (
-      <Button 
-        size="lg" 
+      <Button
+        size="lg"
         disabled
         className="bg-red-600/50 text-white px-8 py-4 text-lg font-bold cursor-not-allowed"
       >
@@ -50,13 +49,15 @@ const WalletConnection = () => {
         <div className="text-center sm:text-left">
           <p className="text-green-400 font-bold">Connected</p>
           <p className="text-white/80 text-sm">
-            {user.wallet?.address ? 
-              `${user.wallet.address.slice(0, 6)}...${user.wallet.address.slice(-4)}` :
-              user.email?.address || 'User'
-            }
+            {user.wallet?.address
+              ? `${user.wallet.address.slice(
+                  0,
+                  6
+                )}...${user.wallet.address.slice(-4)}`
+              : user.email?.address || "User"}
           </p>
         </div>
-        <Button 
+        <Button
           onClick={handleDisconnect}
           variant="outline"
           className="border-red-400 text-red-400 hover:bg-red-400 hover:text-black px-6 py-2"
@@ -69,9 +70,9 @@ const WalletConnection = () => {
   }
 
   return (
-    <Button 
+    <Button
       onClick={handleConnect}
-      size="lg" 
+      size="lg"
       className="bg-red-600 hover:bg-red-700 text-white px-8 py-4 text-lg font-bold animate-pulse hover:animate-none transition-all duration-300 hover:scale-105"
     >
       <Wallet className="w-5 h-5 mr-2" />
