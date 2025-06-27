@@ -1,12 +1,33 @@
-import { createWalletClient, http, publicActions } from "viem";
+import { createWalletClient, http, publicActions, defineChain } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
-import { baseSepolia } from "viem/chains";
 import dotenv from "dotenv";
 
 // Load environment variables
 dotenv.config();
 
-const GAME_TREASURY_ADDRESS = "0xD0484Fbfb4D52f2217664481B4D7eaBF9e97Af00";
+// Define Chiliz mainnet chain
+const chiliz = defineChain({
+  id: 88888,
+  name: "Chiliz",
+  nativeCurrency: {
+    decimals: 18,
+    name: "Chiliz",
+    symbol: "CHZ",
+  },
+  rpcUrls: {
+    default: {
+      http: ["https://rpc.ankr.com/chiliz"],
+    },
+  },
+  blockExplorers: {
+    default: {
+      name: "ChilizScan",
+      url: "https://chiliscan.com",
+    },
+  },
+});
+
+const GAME_TREASURY_ADDRESS = "0xD655243258a621337088179E043843346bD392d2";
 const PRIVATE_KEY = process.env.GAME_TREASURY_PRIVATE_KEY as `0x${string}`;
 
 // Debug logging for environment variables
@@ -21,7 +42,8 @@ if (!PRIVATE_KEY || (PRIVATE_KEY as string) === "your_private_key_here") {
 
 console.log("🔑 Contract configuration loaded:");
 console.log("   Address:", GAME_TREASURY_ADDRESS);
-console.log("   Private key configured:", PRIVATE_KEY ? "Yes" : "No");
+console.log("   Chain:", chiliz.name, "(ID:", chiliz.id, ")");
+console.log("   Private key configured:", !!PRIVATE_KEY);
 console.log(
   "   Environment file loaded:",
   process.env.NODE_ENV || "development"
@@ -31,9 +53,9 @@ const GAME_TREASURY_ABI = [
   {
     inputs: [
       {
-        internalType: "string",
+        internalType: "uint256",
         name: "gameId",
-        type: "string",
+        type: "uint256",
       },
     ],
     name: "createGame",
@@ -44,9 +66,9 @@ const GAME_TREASURY_ABI = [
   {
     inputs: [
       {
-        internalType: "string",
+        internalType: "uint256",
         name: "gameId",
-        type: "string",
+        type: "uint256",
       },
       {
         internalType: "address",
@@ -54,7 +76,7 @@ const GAME_TREASURY_ABI = [
         type: "address",
       },
     ],
-    name: "payoutWinner",
+    name: "payWinner",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
@@ -62,50 +84,27 @@ const GAME_TREASURY_ABI = [
   {
     inputs: [
       {
-        internalType: "string",
+        internalType: "uint256",
         name: "gameId",
-        type: "string",
+        type: "uint256",
       },
     ],
-    name: "cancelGameAndRefund",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "string",
-        name: "gameId",
-        type: "string",
-      },
-    ],
-    name: "getGameInfo",
+    name: "getGame",
     outputs: [
       {
         internalType: "uint256",
-        name: "totalPot",
-        type: "uint256",
-      },
-      {
-        internalType: "uint256",
-        name: "playerCount",
+        name: "pot",
         type: "uint256",
       },
       {
         internalType: "bool",
-        name: "isActive",
+        name: "active",
         type: "bool",
       },
       {
         internalType: "bool",
-        name: "isPaidOut",
+        name: "paidOut",
         type: "bool",
-      },
-      {
-        internalType: "address",
-        name: "winner",
-        type: "address",
       },
     ],
     stateMutability: "view",
@@ -121,7 +120,7 @@ if (PRIVATE_KEY && (PRIVATE_KEY as string) !== "your_private_key_here") {
     const account = privateKeyToAccount(PRIVATE_KEY);
     walletClient = createWalletClient({
       account,
-      chain: baseSepolia,
+      chain: chiliz,
       transport: http(),
     }).extend(publicActions);
     console.log("✅ Wallet client initialized successfully");
@@ -143,11 +142,14 @@ export class GameTreasuryContract {
     try {
       console.log("Creating game on contract:", gameId);
 
+      // Convert string gameId to number for contract
+      const gameIdNum = parseInt(gameId.replace(/\D/g, "")) || 0;
+
       const txHash = await walletClient.writeContract({
         address: GAME_TREASURY_ADDRESS,
         abi: GAME_TREASURY_ABI,
         functionName: "createGame",
-        args: [gameId],
+        args: [BigInt(gameIdNum)],
       });
 
       console.log("Game created, tx:", txHash);
@@ -175,11 +177,14 @@ export class GameTreasuryContract {
     try {
       console.log("Paying out winner:", { gameId, winnerAddress });
 
+      // Convert string gameId to number for contract
+      const gameIdNum = parseInt(gameId.replace(/\D/g, "")) || 0;
+
       const txHash = await walletClient.writeContract({
         address: GAME_TREASURY_ADDRESS,
         abi: GAME_TREASURY_ABI,
-        functionName: "payoutWinner",
-        args: [gameId, winnerAddress],
+        functionName: "payWinner",
+        args: [BigInt(gameIdNum), winnerAddress],
       });
 
       console.log("Payout transaction sent:", txHash);
@@ -197,38 +202,6 @@ export class GameTreasuryContract {
     }
   }
 
-  static async cancelGame(gameId: string) {
-    if (!walletClient) {
-      throw new Error(
-        "Wallet client not initialized - check private key configuration"
-      );
-    }
-
-    try {
-      console.log("Cancelling game:", gameId);
-
-      const txHash = await walletClient.writeContract({
-        address: GAME_TREASURY_ADDRESS,
-        abi: GAME_TREASURY_ABI,
-        functionName: "cancelGameAndRefund",
-        args: [gameId],
-      });
-
-      console.log("Cancel transaction sent:", txHash);
-
-      // Wait for transaction receipt
-      const receipt = await walletClient.waitForTransactionReceipt({
-        hash: txHash,
-      });
-      console.log("Cancellation confirmed:", receipt.status);
-
-      return { txHash, receipt };
-    } catch (error) {
-      console.error("Error cancelling game:", error);
-      throw new Error(`Failed to cancel game: ${error}`);
-    }
-  }
-
   static async getGameInfo(gameId: string) {
     if (!walletClient) {
       throw new Error(
@@ -237,21 +210,22 @@ export class GameTreasuryContract {
     }
 
     try {
+      // Convert string gameId to number for contract
+      const gameIdNum = parseInt(gameId.replace(/\D/g, "")) || 0;
+
       const result = await walletClient.readContract({
         address: GAME_TREASURY_ADDRESS,
         abi: GAME_TREASURY_ABI,
-        functionName: "getGameInfo",
-        args: [gameId],
+        functionName: "getGame",
+        args: [BigInt(gameIdNum)],
       });
 
-      const [totalPot, playerCount, isActive, isPaidOut, winner] = result;
+      const [pot, active, paidOut] = result;
 
       return {
-        totalPot: totalPot.toString(),
-        playerCount: Number(playerCount),
-        isActive,
-        isPaidOut,
-        winner,
+        totalPot: pot.toString(),
+        isActive: active,
+        isPaidOut: paidOut,
       };
     } catch (error) {
       console.error("Error getting game info:", error);

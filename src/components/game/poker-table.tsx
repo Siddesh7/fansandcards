@@ -12,6 +12,7 @@ interface PokerTableProps {
   players: Player[];
   currentGame?: Game;
   currentPlayerId?: string;
+  currentRoom?: any;
   onCardSelect?: (card: any) => void;
   selectedCards?: any[];
   onJudgePick?: (submissionIndex: number) => void;
@@ -76,6 +77,7 @@ export const PokerTable = ({
   players,
   currentGame,
   currentPlayerId,
+  currentRoom,
   onCardSelect,
   selectedCards = [],
   onJudgePick,
@@ -314,6 +316,7 @@ export const PokerTable = ({
         <RoundWinnerCelebration
           currentGame={currentGame}
           players={players}
+          currentRoom={currentRoom}
           winningSubmission={
             currentGame.submissions.find((s) => s.isRevealed === false) ||
             currentGame.submissions[0]

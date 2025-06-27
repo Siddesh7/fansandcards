@@ -292,9 +292,68 @@ export default function Home() {
                   "Unknown Player"}{" "}
                 WINS!
               </h2>
-              <p className="text-xl text-black/80">
+              <p className="text-xl text-black/80 mb-4">
                 With {winnerScore || 0} points!
               </p>
+
+              {/* Payout Information */}
+              {gameResults.payoutTxHash && (
+                <div className="bg-green-600/20 border-2 border-green-400 rounded-lg p-4 mt-4">
+                  <div className="flex items-center justify-center gap-2 mb-2">
+                    <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
+                    <span className="text-black font-bold text-lg">
+                      💰 Prize Sent Successfully!
+                    </span>
+                  </div>
+                  <p className="text-black/80 text-sm mb-2">
+                    The pot of{" "}
+                    <span className="font-bold">
+                      {currentRoom
+                        ? (Number(currentRoom.totalPot) / 1000000000).toFixed(9)
+                        : "0"}{" "}
+                      CHZ
+                    </span>{" "}
+                    has been sent to the winner
+                  </p>
+                  <a
+                    href={`https://chiliscan.com/tx/${gameResults.payoutTxHash}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-black/70 hover:text-black underline text-sm"
+                  >
+                    View Transaction 🔗
+                  </a>
+                </div>
+              )}
+
+              {/* Payout Error */}
+              {gameResults.payoutError && (
+                <div className="bg-red-600/20 border-2 border-red-400 rounded-lg p-4 mt-4">
+                  <div className="flex items-center justify-center gap-2 mb-2">
+                    <span className="text-black font-bold text-lg">
+                      ⚠️ Payout Issue
+                    </span>
+                  </div>
+                  <p className="text-black/80 text-sm">
+                    {gameResults.payoutError}
+                  </p>
+                </div>
+              )}
+
+              {/* Loading state for payout */}
+              {!gameResults.payoutTxHash && !gameResults.payoutError && (
+                <div className="bg-blue-600/20 border-2 border-blue-400 rounded-lg p-4 mt-4">
+                  <div className="flex items-center justify-center gap-2 mb-2">
+                    <div className="w-3 h-3 bg-blue-400 rounded-full animate-ping"></div>
+                    <span className="text-black font-bold text-lg">
+                      💸 Sending Prize...
+                    </span>
+                  </div>
+                  <p className="text-black/80 text-sm">
+                    Processing payout to winner's wallet
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Final Leaderboard */}
@@ -426,6 +485,7 @@ export default function Home() {
         players={currentRoom?.players || []}
         currentGame={currentGame}
         currentPlayerId={playerId || undefined}
+        currentRoom={currentRoom}
         onCardSelect={handleCardSelect}
         selectedCards={selectedCards}
         onJudgePick={handleJudgePick}

@@ -48,7 +48,7 @@ const roomSchema = new Schema({
   totalPot: { type: String, default: "0" },
   treasureWallet: {
     type: String,
-    default: "0x9bfeBd2E81725D7a3282cdB01cD1C3732178E954",
+    default: "0x006B584f1D3Eaa741442f610C1F28dF83C62898d",
   },
   winner: { type: String },
   payoutTxHash: { type: String },

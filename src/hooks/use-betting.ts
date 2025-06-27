@@ -1,13 +1,34 @@
 "use client";
 
 import { useSendTransaction, useAccount, useBalance } from "wagmi";
-import { parseEther, formatEther } from "viem";
+import { parseEther, formatEther, defineChain } from "viem";
 import { useState } from "react";
 import { Room } from "../types/game";
-import { baseSepolia } from "viem/chains";
+
+// Define Chiliz mainnet chain
+const chiliz = defineChain({
+  id: 88888,
+  name: "Chiliz",
+  nativeCurrency: {
+    decimals: 18,
+    name: "Chiliz",
+    symbol: "CHZ",
+  },
+  rpcUrls: {
+    default: {
+      http: ["https://rpc.ankr.com/chiliz"],
+    },
+  },
+  blockExplorers: {
+    default: {
+      name: "ChilizScan",
+      url: "https://chiliscan.com",
+    },
+  },
+});
 
 const TREASURE_WALLET =
-  "0x9bfeBd2E81725D7a3282cdB01cD1C3732178E954" as `0x${string}`;
+  "0xD655243258a621337088179E043843346bD392d2" as `0x${string}`;
 const DEPOSIT_AMOUNT_ETH = "0.000000001"; // 1 Gwei
 
 export function useBetting(
@@ -50,7 +71,7 @@ export function useBetting(
       const txHash = await sendTransactionAsync({
         to: TREASURE_WALLET,
         value: parseEther(DEPOSIT_AMOUNT_ETH),
-        chainId: baseSepolia.id,
+        chainId: chiliz.id,
       });
 
       console.log("✅ Transaction approved by user! TxHash:", txHash);
@@ -98,7 +119,7 @@ export function useBetting(
       const result = await sendTransactionAsync({
         to: winnerAddress as `0x${string}`,
         value: BigInt(payoutAmount),
-        chainId: baseSepolia.id,
+        chainId: chiliz.id,
         // Note: payout info tracked via backend API
       });
 

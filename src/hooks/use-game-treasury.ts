@@ -42,29 +42,16 @@ export function useGameTreasury(
     functionName: "DEPOSIT_AMOUNT",
   });
 
-  // Check if player has deposited for a game
-  const useHasPlayerDeposited = (
-    gameId: string,
-    playerAddress?: `0x${string}`
-  ) => {
-    return useReadContract({
-      address: GAME_TREASURY_ADDRESS,
-      abi: GAME_TREASURY_ABI,
-      functionName: "hasPlayerDeposited",
-      args: [gameId, playerAddress || "0x0"],
-      query: {
-        enabled: !!gameId && !!playerAddress,
-      },
-    });
-  };
-
   // Get game info from contract
   const useGameInfo = (gameId: string) => {
+    // Convert string gameId to number for contract
+    const gameIdNum = parseInt(gameId.replace(/\D/g, "")) || 0;
+
     return useReadContract({
       address: GAME_TREASURY_ADDRESS,
       abi: GAME_TREASURY_ABI,
-      functionName: "getGameInfo",
-      args: [gameId],
+      functionName: "getGame",
+      args: [BigInt(gameIdNum)],
       query: {
         enabled: !!gameId,
       },
@@ -98,11 +85,14 @@ export function useGameTreasury(
         address
       );
 
+      // Convert room ID to number for contract
+      const gameIdNum = parseInt(room.id.replace(/\D/g, "")) || 0;
+
       const txHash = await writeContractAsync({
         address: GAME_TREASURY_ADDRESS,
         abi: GAME_TREASURY_ABI,
-        functionName: "depositForGame",
-        args: [room.id],
+        functionName: "deposit",
+        args: [BigInt(gameIdNum)],
         value: depositAmount,
       });
 
@@ -159,7 +149,6 @@ export function useGameTreasury(
     txHash: lastTxHash,
     receipt,
     contractDepositAmount,
-    useHasPlayerDeposited,
     useGameInfo,
     GAME_TREASURY_ADDRESS,
   };

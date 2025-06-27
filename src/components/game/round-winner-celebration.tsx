@@ -12,6 +12,7 @@ interface RoundWinnerCelebrationProps {
   players: Player[];
   winningSubmission?: Submission;
   onComplete?: () => void;
+  currentRoom?: any; // Add room prop to access pot info
 }
 
 export const RoundWinnerCelebration = ({
@@ -19,6 +20,7 @@ export const RoundWinnerCelebration = ({
   players,
   winningSubmission,
   onComplete,
+  currentRoom,
 }: RoundWinnerCelebrationProps) => {
   // Find the winning player
   const winningPlayer = players.find(
@@ -160,6 +162,27 @@ export const RoundWinnerCelebration = ({
                 >
                   +5 Points! • Total: {winningPlayer.score} pts
                 </motion.div>
+
+                {/* Current Pot Information */}
+                {currentRoom && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: 1.1, type: "spring" }}
+                    className="mt-3 p-3 bg-green-600/20 border border-green-400/30 rounded-lg"
+                  >
+                    <div className="text-green-400 font-bold text-sm">
+                      💰 Current Prize Pool
+                    </div>
+                    <div className="text-white font-bold text-lg">
+                      {(Number(currentRoom.totalPot) / 1000000000).toFixed(9)}{" "}
+                      CHZ
+                    </div>
+                    <div className="text-green-300 text-xs">
+                      Winner takes all at game end!
+                    </div>
+                  </motion.div>
+                )}
               </div>
             </div>
           </motion.div>

@@ -23,7 +23,7 @@ export interface Room {
   createdBy: string;
   depositAmount: string; // in wei (0.000000001 ETH = 1000000000 wei)
   totalPot: string; // total amount in pot in wei
-  treasureWallet: string; // 0x9bfeBd2E81725D7a3282cdB01cD1C3732178E954
+  treasureWallet: string; // 0xD655243258a621337088179E043843346bD392d2
   winner?: string; // player id of winner
   payoutTxHash?: string; // transaction hash for winner payout
 }

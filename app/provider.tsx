@@ -1,36 +1,65 @@
 "use client";
 
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-
 import { PrivyProvider } from "@privy-io/react-auth";
-// Make sure to import these from `@privy-io/wagmi`, not `wagmi`
-import { WagmiProvider, createConfig } from "@privy-io/wagmi";
+import { WagmiProvider } from "@privy-io/wagmi";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { http, defineChain } from "viem";
+import { createConfig } from "wagmi";
 import { baseSepolia } from "wagmi/chains";
-import { http } from "wagmi";
+import { ReactNode } from "react";
 
 const queryClient = new QueryClient();
-const config = createConfig({
-  chains: [baseSepolia],
+
+// Define Chiliz mainnet chain
+const chiliz = defineChain({
+  id: 88888,
+  name: "Chiliz",
+  nativeCurrency: {
+    decimals: 18,
+    name: "Chiliz",
+    symbol: "CHZ",
+  },
+  rpcUrls: {
+    default: {
+      http: ["https://rpc.ankr.com/chiliz"],
+    },
+  },
+  blockExplorers: {
+    default: {
+      name: "ChilizScan",
+      url: "https://chiliscan.com",
+    },
+  },
+});
+
+const wagmiConfig = createConfig({
+  chains: [chiliz, baseSepolia], // Keep Base Sepolia for testing, Chiliz as primary
   transports: {
+    [chiliz.id]: http(),
     [baseSepolia.id]: http(),
   },
 });
-export default function Providers({ children }: { children: React.ReactNode }) {
+
+export default function Providers({ children }: { children: ReactNode }) {
   return (
     <PrivyProvider
-      appId="cmbys4tbe00j4ld0nnspaqhgq"
+      appId={"cmbys4tbe00j4ld0nnspaqhgq"}
       config={{
-        embeddedWallets: {
-          ethereum: {
-            createOnLogin: "users-without-wallets",
-          },
+        loginMethods: ["email", "wallet"],
+        appearance: {
+          theme: "dark",
+          accentColor: "#676FFF",
+          logo: "/next.svg",
         },
-        defaultChain: baseSepolia,
-        supportedChains: [baseSepolia],
+        defaultChain: chiliz,
+        supportedChains: [chiliz, baseSepolia],
+        embeddedWallets: {
+          createOnLogin: "users-without-wallets",
+        },
       }}
     >
       <QueryClientProvider client={queryClient}>
-        <WagmiProvider config={config}>{children}</WagmiProvider>
+        <WagmiProvider config={wagmiConfig}>{children}</WagmiProvider>
       </QueryClientProvider>
     </PrivyProvider>
   );
