@@ -17,32 +17,32 @@ interface PokerCardProps {
 
 const rarityConfig = {
   common: {
-    gradient: "from-gray-400 via-gray-500 to-gray-600",
-    border: "border-gray-300",
+    background: "bg-white/10 backdrop-blur-md",
+    border: "border-gray-300/20",
     glow: "shadow-gray-400/20",
     icon: Star,
     iconColor: "text-gray-600",
   },
   rare: {
-    gradient: "from-blue-400 via-blue-500 to-blue-600",
-    border: "border-blue-300",
-    glow: "shadow-blue-400/30",
+    background: "bg-cyan-400/15 backdrop-blur-md",
+    border: "border-cyan-300/30",
+    glow: "shadow-cyan-400/30",
     icon: Sparkles,
-    iconColor: "text-blue-600",
+    iconColor: "text-cyan-600",
   },
   epic: {
-    gradient: "from-purple-400 via-purple-500 to-purple-600",
-    border: "border-purple-300",
+    background: "bg-purple-400/15 backdrop-blur-md",
+    border: "border-purple-300/30",
     glow: "shadow-purple-400/40",
     icon: Zap,
     iconColor: "text-purple-600",
   },
   legendary: {
-    gradient: "from-amber-400 via-yellow-500 to-orange-500",
-    border: "border-amber-300",
-    glow: "shadow-amber-400/50",
+    background: "bg-yellow-400/15 backdrop-blur-md",
+    border: "border-yellow-300/30",
+    glow: "shadow-yellow-400/50",
     icon: Crown,
-    iconColor: "text-amber-600",
+    iconColor: "text-yellow-600",
   },
 };
 
@@ -85,7 +85,7 @@ export const PokerCard = ({
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
       >
-        <div className="absolute inset-0 w-full h-full rounded-lg bg-gradient-to-br from-red-800 via-red-900 to-red-950 border-2 border-red-600 shadow-lg overflow-hidden">
+        <div className="absolute inset-0 w-24 h-full rounded-lg bg-gradient-to-br from-red-800 via-red-900 to-red-950 border-2 border-red-600 shadow-lg overflow-hidden">
           {/* Card back pattern */}
           <div className="absolute inset-2 rounded-md bg-gradient-to-br from-red-700 to-red-800 border border-red-500">
             <div className="absolute inset-1 rounded border border-red-400/50">
@@ -122,8 +122,7 @@ export const PokerCard = ({
       <div
         className={cn(
           "absolute inset-0 w-full h-full rounded-lg border-2 overflow-hidden shadow-xl",
-          "bg-gradient-to-br",
-          config.gradient,
+          config.background,
           config.border,
           config.glow,
           isSelected && "ring-2 ring-yellow-400 ring-opacity-75"

@@ -301,7 +301,7 @@ export const PokerLobby = ({
                 >
                   <PokerCard
                     card={card}
-                    size="sm"
+                    size="md"
                     className="hover:transform hover:scale-110 transition-transform duration-200"
                   />
                 </motion.div>

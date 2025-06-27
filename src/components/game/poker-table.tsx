@@ -134,13 +134,6 @@ export const PokerTable = ({
                 <Users size={14} />
                 <span>{players.length} players</span>
               </div>
-              <div className="flex items-center gap-1">
-                <Clock size={14} />
-                <span>{currentGame.timeLeft}s</span>
-              </div>
-              <div className="text-amber-400 font-bold">
-                {currentGame.roundState}
-              </div>
             </div>
           </div>
         )}

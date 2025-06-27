@@ -12,16 +12,16 @@ interface GameCardProps {
 }
 
 const rarityColors = {
-  common: "from-gray-500 to-gray-600",
-  rare: "from-blue-500 to-blue-600",
-  epic: "from-purple-500 to-purple-600",
-  legendary: "from-yellow-500 to-orange-500",
+  common: "bg-white/10 border-gray-300/20",
+  rare: "bg-cyan-400/15 border-cyan-300/30",
+  epic: "bg-purple-400/15 border-purple-300/30",
+  legendary: "bg-yellow-400/15 border-yellow-300/30",
 };
 
 const sizeClasses = {
-  sm: "w-24 h-32 text-xs",
-  md: "w-32 h-44 text-sm",
-  lg: "w-40 h-56 text-base",
+  sm: "w-32 h-44 text-xs",
+  md: "w-40 h-56 text-sm",
+  lg: "w-48 h-64 text-base",
 };
 
 export const GameCard = ({
@@ -45,10 +45,10 @@ export const GameCard = ({
       <div
         className={cn(
           "absolute inset-0 w-full h-full rounded-lg border-2 overflow-hidden",
-          "bg-gradient-to-br text-white shadow-lg",
+          "backdrop-blur-md text-white shadow-lg",
           isSelected
             ? "border-yellow-400 shadow-yellow-400/50"
-            : "border-gray-700",
+            : "border-white/20",
           rarityColors[card.rarity]
         )}
       >
