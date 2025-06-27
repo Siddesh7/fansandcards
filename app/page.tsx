@@ -284,17 +284,17 @@ export default function Home() {
         <div className="relative z-10 p-4">
           <div className="max-w-4xl mx-auto">
             {/* Winner Announcement */}
-            <div className="bg-gradient-to-r from-yellow-500 to-orange-500 rounded-lg p-8 mb-6 text-center">
-              <h1 className="text-4xl font-bold text-black mb-4">
+            <div className="bg-gradient-to-br from-gray-800 via-gray-900 to-black rounded-lg p-8 mb-6 text-center border-2 border-amber-500/50 shadow-2xl">
+              <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-yellow-500 mb-4">
                 🏆 GAME OVER 🏆
               </h1>
-              <h2 className="text-3xl font-bold text-black mb-2">
+              <h2 className="text-3xl font-bold text-white mb-2">
                 {gameResults.winnerName ||
                   winnerPlayer?.name ||
                   "Unknown Player"}{" "}
-                WINS!
+                <span className="text-amber-400">WINS!</span>
               </h2>
-              <p className="text-xl text-black/80 mb-4">
+              <p className="text-xl text-gray-300 mb-4">
                 With {winnerScore || 0} points!
               </p>
 
@@ -303,13 +303,13 @@ export default function Home() {
                 <div className="bg-green-600/20 border-2 border-green-400 rounded-lg p-4 mt-4">
                   <div className="flex items-center justify-center gap-2 mb-2">
                     <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
-                    <span className="text-black font-bold text-lg">
+                    <span className="text-green-400 font-bold text-lg">
                       💰 Prize Sent Successfully!
                     </span>
                   </div>
-                  <p className="text-black/80 text-sm mb-2">
+                  <p className="text-gray-300 text-sm mb-2">
                     The pot of{" "}
-                    <span className="font-bold">
+                    <span className="font-bold text-green-400">
                       {currentRoom
                         ? (
                             Number(currentRoom.totalPot) / 1000000000000000000
@@ -323,7 +323,7 @@ export default function Home() {
                     href={`https://chiliscan.com/tx/${gameResults.payoutTxHash}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 text-black/70 hover:text-black underline text-sm"
+                    className="inline-flex items-center gap-1 text-gray-400 hover:text-green-400 underline text-sm transition-colors"
                   >
                     View Transaction 🔗
                   </a>
@@ -334,11 +334,11 @@ export default function Home() {
               {gameResults.payoutError && (
                 <div className="bg-red-600/20 border-2 border-red-400 rounded-lg p-4 mt-4">
                   <div className="flex items-center justify-center gap-2 mb-2">
-                    <span className="text-black font-bold text-lg">
+                    <span className="text-red-400 font-bold text-lg">
                       ⚠️ Payout Issue
                     </span>
                   </div>
-                  <p className="text-black/80 text-sm">
+                  <p className="text-gray-300 text-sm">
                     {gameResults.payoutError}
                   </p>
                 </div>
@@ -349,11 +349,11 @@ export default function Home() {
                 <div className="bg-blue-600/20 border-2 border-blue-400 rounded-lg p-4 mt-4">
                   <div className="flex items-center justify-center gap-2 mb-2">
                     <div className="w-3 h-3 bg-blue-400 rounded-full animate-ping"></div>
-                    <span className="text-black font-bold text-lg">
+                    <span className="text-blue-400 font-bold text-lg">
                       💸 Sending Prize...
                     </span>
                   </div>
-                  <p className="text-black/80 text-sm">
+                  <p className="text-gray-300 text-sm">
                     Processing payout to winner's wallet
                   </p>
                 </div>
