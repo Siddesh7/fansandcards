@@ -459,6 +459,11 @@ export default function Home() {
             <h1 className="text-6xl font-bold mb-4 bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent">
               FansAndCards
             </h1>
+            <div className="flex items-center justify-center gap-2 mb-4">
+              <div className="bg-gradient-to-r from-red-500 to-orange-500 text-white px-3 py-1 rounded-full text-sm font-bold shadow-lg">
+                🌐 On Chiliz Mainnet
+              </div>
+            </div>
             <p className="text-xl mb-8 opacity-90">
               The Most Hilarious Football Cards Game 🏆⚽
             </p>
@@ -542,9 +547,14 @@ export default function Home() {
                 </span>
               </h1>
               <div className="absolute -inset-4 bg-gradient-to-r from-amber-500/20 via-yellow-400/20 to-orange-500/20 blur-xl rounded-full opacity-60"></div>
-              <p className="text-lg md:text-xl text-amber-200/80 font-medium tracking-wider uppercase">
-                ⚽ Football Card Game ⚽
-              </p>
+              <div className="flex items-center justify-center gap-3 mb-2">
+                <p className="text-lg md:text-xl text-amber-200/80 font-medium tracking-wider uppercase">
+                  ⚽ Football Card Game ⚽
+                </p>
+                <div className="bg-gradient-to-r from-red-500 to-orange-500 text-white px-2 py-1 rounded-full text-xs font-bold shadow-lg">
+                  Chiliz Mainnet
+                </div>
+              </div>
             </div>
           </div>
 

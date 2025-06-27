@@ -49,7 +49,6 @@ export default function Providers({ children }: { children: ReactNode }) {
         appearance: {
           theme: "dark",
           accentColor: "#676FFF",
-          logo: "/next.svg",
         },
         defaultChain: chiliz,
         supportedChains: [chiliz, baseSepolia],
