@@ -5,7 +5,6 @@ import { WagmiProvider } from "@privy-io/wagmi";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { http, defineChain } from "viem";
 import { createConfig } from "wagmi";
-import { baseSepolia } from "wagmi/chains";
 import { ReactNode } from "react";
 
 const queryClient = new QueryClient();
@@ -33,10 +32,9 @@ const chiliz = defineChain({
 });
 
 const wagmiConfig = createConfig({
-  chains: [chiliz, baseSepolia], // Keep Base Sepolia for testing, Chiliz as primary
+  chains: [chiliz],
   transports: {
     [chiliz.id]: http(),
-    [baseSepolia.id]: http(),
   },
 });
 
@@ -51,7 +49,7 @@ export default function Providers({ children }: { children: ReactNode }) {
           accentColor: "#676FFF",
         },
         defaultChain: chiliz,
-        supportedChains: [chiliz, baseSepolia],
+        supportedChains: [chiliz],
         embeddedWallets: {
           createOnLogin: "users-without-wallets",
         },

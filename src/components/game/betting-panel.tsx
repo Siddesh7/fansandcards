@@ -132,7 +132,7 @@ export const BettingPanel = ({
           <h3 className="text-amber-400 font-bold text-xl">Game Pot</h3>
         </div>
         <div className="text-right">
-          <div className="text-2xl font-bold text-white">{potInEth} ETH</div>
+          <div className="text-2xl font-bold text-white">{potInEth} CHZ</div>
           <div className="text-gray-400 text-sm">Prize Pool</div>
         </div>
       </div>
@@ -173,7 +173,7 @@ export const BettingPanel = ({
           </div>
           {hasDeposited && currentPlayer?.depositTxHash && (
             <a
-              href={`https://sepolia.basescan.org/tx/${currentPlayer.depositTxHash}`}
+              href={`https://chiliscan.com/tx/${currentPlayer.depositTxHash}`}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-1 text-blue-400 hover:text-blue-300 text-sm"
@@ -195,7 +195,7 @@ export const BettingPanel = ({
             <span className="text-gray-400">Your Balance:</span>
             <div className="font-bold text-white">
               {balance
-                ? `${parseFloat(balance.formatted).toFixed(6)} ETH`
+                ? `${parseFloat(balance.formatted).toFixed(6)} CHZ`
                 : "..."}
             </div>
           </div>
