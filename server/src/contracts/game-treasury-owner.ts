@@ -27,7 +27,7 @@ const chiliz = defineChain({
   },
 });
 
-const GAME_TREASURY_ADDRESS = "0xD655243258a621337088179E043843346bD392d2";
+const GAME_TREASURY_ADDRESS = "0x8202f7875f0417593CC4a8391dA08874A1eb0EAF";
 const PRIVATE_KEY = process.env.GAME_TREASURY_PRIVATE_KEY as `0x${string}`;
 
 // Debug logging for environment variables

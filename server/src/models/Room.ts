@@ -44,11 +44,11 @@ const roomSchema = new Schema({
   settings: gameSettingsSchema,
   createdAt: { type: Date, default: Date.now },
   createdBy: { type: String, required: true },
-  depositAmount: { type: String, default: "1000000000" }, // 0.000000001 ETH in wei
+  depositAmount: { type: String, default: "1000000000000000000" }, // 1 CHZ in wei
   totalPot: { type: String, default: "0" },
   treasureWallet: {
     type: String,
-    default: "0x006B584f1D3Eaa741442f610C1F28dF83C62898d",
+    default: "0x8202f7875f0417593CC4a8391dA08874A1eb0EAF",
   },
   winner: { type: String },
   payoutTxHash: { type: String },

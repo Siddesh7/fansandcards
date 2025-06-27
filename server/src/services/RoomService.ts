@@ -43,9 +43,9 @@ export class RoomService {
       settings,
       createdAt: new Date(),
       createdBy: playerId,
-      depositAmount: "1000000000", // 0.000000001 ETH in wei
+      depositAmount: "1000000000000000000", // 1 CHZ in wei
       totalPot: "0",
-      treasureWallet: "0xD655243258a621337088179E043843346bD392d2",
+      treasureWallet: "0x8202f7875f0417593CC4a8391dA08874A1eb0EAF",
     };
 
     const room = new Room(roomData);

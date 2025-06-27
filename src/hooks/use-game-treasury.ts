@@ -130,7 +130,7 @@ export function useGameTreasury(
 
   const formatDepositAmount = () => {
     const depositAmount = contractDepositAmount || DEPOSIT_AMOUNT;
-    return `${formatEther(depositAmount)} ETH`;
+    return `${formatEther(depositAmount)} CHZ`;
   };
 
   const formatPotAmount = (potWei: string) => {

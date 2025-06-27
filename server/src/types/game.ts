@@ -21,9 +21,9 @@ export interface Room {
   settings: GameSettings;
   createdAt: Date;
   createdBy: string;
-  depositAmount: string; // in wei (0.000000001 ETH = 1000000000 wei)
+  depositAmount: string; // in wei (1 CHZ = 1000000000000000000 wei)
   totalPot: string; // total amount in pot in wei
-  treasureWallet: string; // 0xD655243258a621337088179E043843346bD392d2
+  treasureWallet: string; // 0x8202f7875f0417593CC4a8391dA08874A1eb0EAF
   winner?: string; // player id of winner
   payoutTxHash?: string; // transaction hash for winner payout
 }

@@ -1,7 +1,7 @@
 import { Address } from "viem";
 
 export const GAME_TREASURY_ADDRESS =
-  "0xD655243258a621337088179E043843346bD392d2";
+  "0x8202f7875f0417593CC4a8391dA08874A1eb0EAF";
 
 export const GAME_TREASURY_ABI = [
   {
@@ -139,4 +139,4 @@ export const GAME_TREASURY_ABI = [
   },
 ] as const;
 
-export const DEPOSIT_AMOUNT = BigInt("1000000000");
+export const DEPOSIT_AMOUNT = BigInt("1000000000000000000");

@@ -175,7 +175,9 @@ export const RoundWinnerCelebration = ({
                       💰 Current Prize Pool
                     </div>
                     <div className="text-white font-bold text-lg">
-                      {(Number(currentRoom.totalPot) / 1000000000).toFixed(9)}{" "}
+                      {(
+                        Number(currentRoom.totalPot) / 1000000000000000000
+                      ).toFixed(2)}{" "}
                       CHZ
                     </div>
                     <div className="text-green-300 text-xs">

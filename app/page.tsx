@@ -200,20 +200,22 @@ export default function Home() {
   const shareRoomCode = async () => {
     if (!currentRoom) return;
 
-    const roomCode = currentRoom.id.slice(-6).toUpperCase(); // Use last 6 chars as room code
-    const text = `Join my fans & cards game! Room Code: ${roomCode}`;
+    const roomCode = currentRoom.id;
+    const text = `Join my FansAndCards game! Room Code: ${roomCode}`;
+    const url = `${window.location.origin}?room=${roomCode}`;
 
-    if (navigator.share && navigator.canShare({ text })) {
+    if (navigator.share) {
       try {
         await navigator.share({
-          title: `Join ${currentRoom.name}`,
-          text: text,
+          title: "FansAndCards Game",
+          text,
+          url,
         });
       } catch (err) {
-        copyToClipboard(roomCode);
+        console.log("Sharing cancelled");
       }
     } else {
-      copyToClipboard(roomCode);
+      copyToClipboard(`${text}\n${url}`);
     }
   };
 
@@ -309,7 +311,9 @@ export default function Home() {
                     The pot of{" "}
                     <span className="font-bold">
                       {currentRoom
-                        ? (Number(currentRoom.totalPot) / 1000000000).toFixed(9)
+                        ? (
+                            Number(currentRoom.totalPot) / 1000000000000000000
+                          ).toFixed(2)
                         : "0"}{" "}
                       CHZ
                     </span>{" "}
@@ -453,7 +457,7 @@ export default function Home() {
         <div className="relative z-10 flex items-center justify-center min-h-screen">
           <div className="text-center text-white p-8">
             <h1 className="text-6xl font-bold mb-4 bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent">
-              Fan Zone Roast Fest
+              FansAndCards
             </h1>
             <p className="text-xl mb-8 opacity-90">
               The Most Hilarious Football Cards Game 🏆⚽

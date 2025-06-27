@@ -28,8 +28,8 @@ const chiliz = defineChain({
 });
 
 const TREASURE_WALLET =
-  "0xD655243258a621337088179E043843346bD392d2" as `0x${string}`;
-const DEPOSIT_AMOUNT_ETH = "0.000000001"; // 1 Gwei
+  "0x8202f7875f0417593CC4a8391dA08874A1eb0EAF" as `0x${string}`;
+const DEPOSIT_AMOUNT_ETH = "1"; // 1 CHZ
 
 export function useBetting(
   onSocketDeposit?: (
@@ -58,7 +58,7 @@ export function useBetting(
 
     if (!balance || balance.value < parseEther(DEPOSIT_AMOUNT_ETH)) {
       throw new Error(
-        `Insufficient balance. You need at least ${DEPOSIT_AMOUNT_ETH} ETH`
+        `Insufficient balance. You need at least ${DEPOSIT_AMOUNT_ETH} CHZ`
       );
     }
 
@@ -142,7 +142,7 @@ export function useBetting(
   };
 
   const formatDepositAmount = () => {
-    return `${DEPOSIT_AMOUNT_ETH} ETH`;
+    return `${DEPOSIT_AMOUNT_ETH} CHZ`;
   };
 
   const formatPotAmount = (potWei: string) => {
