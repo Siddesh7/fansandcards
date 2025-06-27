@@ -3,12 +3,15 @@ import { Game } from "../models/Game";
 import { Room } from "../models/Room";
 import { Game as GameInterface, AnswerCard, Player } from "../types/game";
 import { questionCards, answerCards } from "../data/cards";
+import { RoomService } from "./RoomService";
 
 export class GameService {
   private io: Server;
+  private roomService: RoomService;
 
-  constructor(io: Server) {
+  constructor(io: Server, roomService: RoomService) {
     this.io = io;
+    this.roomService = roomService;
   }
 
   async startGame(
@@ -396,7 +399,7 @@ export class GameService {
     // Clean up game
     await Game.deleteOne({ roomId });
 
-    const results = {
+    const results: any = {
       finalScores,
       finalScoresWithNames,
       winner: winner[0],
@@ -406,6 +409,23 @@ export class GameService {
     };
 
     console.log("🏁 Final results being sent:", results);
+
+    // Handle contract payout for the winner
+    try {
+      console.log("🏁 Initiating contract payout for winner:", winner[0]);
+      const payoutResult = await this.roomService.payoutWinner(
+        roomId,
+        winner[0]
+      );
+      console.log("🏁 Contract payout successful:", payoutResult.txHash);
+
+      // Add payout info to results
+      results.payoutTxHash = payoutResult.txHash;
+    } catch (error) {
+      console.error("🏁 Contract payout failed:", error);
+      // Don't fail the game completion if payout fails
+      results.payoutError = "Payout failed - please contact support";
+    }
 
     return results;
   }

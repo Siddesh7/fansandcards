@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from "uuid";
 import { Room } from "../models/Room";
 import { Player, GameSettings, Room as RoomInterface } from "../types/game";
 import { answerCards } from "../data/cards";
+import { GameTreasuryContract } from "../contracts/game-treasury-owner";
 
 export class RoomService {
   private io: Server;
@@ -49,6 +50,16 @@ export class RoomService {
 
     const room = new Room(roomData);
     await room.save();
+
+    // Create game on contract
+    try {
+      console.log("Creating game on contract for room:", roomId);
+      await GameTreasuryContract.createGame(roomId);
+      console.log("Game successfully created on contract");
+    } catch (error) {
+      console.error("Failed to create game on contract:", error);
+      // Don't fail room creation if contract fails - log and continue
+    }
 
     // Track socket to player mapping
     this.socketToPlayer.set(socketId, { roomId, playerId });
@@ -242,6 +253,47 @@ export class RoomService {
 
     await room.save();
     return room.toObject() as RoomInterface;
+  }
+
+  async payoutWinner(
+    roomId: string,
+    winnerPlayerId: string
+  ): Promise<{ room: RoomInterface; txHash: string }> {
+    const room = await Room.findOne({ id: roomId });
+    if (!room) {
+      throw new Error("Room not found");
+    }
+
+    const winner = room.players.find((p) => p.id === winnerPlayerId);
+    if (!winner || !winner.walletAddress) {
+      throw new Error("Winner not found or no wallet address");
+    }
+
+    try {
+      console.log("Paying out winner on contract:", {
+        roomId,
+        winnerPlayerId,
+        walletAddress: winner.walletAddress,
+      });
+
+      const result = await GameTreasuryContract.payoutWinner(
+        roomId,
+        winner.walletAddress as `0x${string}`
+      );
+
+      // Update room with payout info
+      room.winner = winnerPlayerId;
+      room.payoutTxHash = result.txHash;
+      room.gameState = "finished";
+
+      await room.save();
+
+      console.log("Winner payout successful:", result.txHash);
+      return { room: room.toObject() as RoomInterface, txHash: result.txHash };
+    } catch (error) {
+      console.error("Failed to payout winner on contract:", error);
+      throw new Error(`Failed to payout winner: ${error}`);
+    }
   }
 
   async canStartGame(roomId: string): Promise<boolean> {

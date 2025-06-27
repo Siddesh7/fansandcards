@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Room, Player } from "../../types/game";
-import { useBetting } from "../../hooks/use-betting";
+import { useGameTreasury } from "../../hooks/use-game-treasury";
 import { usePrivy } from "@privy-io/react-auth";
 import { useSocket } from "../../hooks/use-socket";
 import { cn } from "@/lib/utils";
@@ -36,14 +36,14 @@ export const BettingPanel = ({
   const {
     address,
     balance,
-    depositForRoom,
+    depositForGame,
     hasEnoughBalance,
     formatDepositAmount,
     formatPotAmount,
     isProcessing,
     error,
-  } = useBetting((roomId, txHash, walletAddress) => {
-    console.log("🔗 Calling recordDeposit from useBetting callback:", {
+  } = useGameTreasury((roomId, txHash, walletAddress) => {
+    console.log("🔗 Calling recordDeposit from useGameTreasury callback:", {
       roomId,
       txHash,
       walletAddress,
@@ -68,7 +68,7 @@ export const BettingPanel = ({
     }
 
     try {
-      const txHash = await depositForRoom(room, (hash) => {
+      const txHash = await depositForGame(room, (hash) => {
         setShowSuccess(true);
         onDeposit?.(hash);
         // Show toast for shorter duration

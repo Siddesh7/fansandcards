@@ -7,7 +7,7 @@ import { RoomService } from "../services/RoomService";
 
 export const setupSocketHandlers = (io: Server) => {
   const roomService = new RoomService(io);
-  const gameService = new GameService(io);
+  const gameService = new GameService(io, roomService);
 
   io.on("connection", (socket: Socket) => {
     console.log(`🎮 Player connected: ${socket.id}`);
