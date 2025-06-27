@@ -195,7 +195,7 @@ export const PokerTable = ({
               {/* Other players' card backs */}
               {player.hand && player.hand.length > 0 && (
                 <div className="absolute top-full mt-2 left-1/2 transform -translate-x-1/2">
-                  <div className="flex justify-center">
+                  <div className="flex justify-center px-2">
                     {Array.from({
                       length: Math.min(player.hand.length, 5),
                     }).map((_, cardIndex) => (
@@ -245,7 +245,7 @@ export const PokerTable = ({
               </div>
 
               {/* Cards in hand */}
-              <div className="flex gap-1 justify-center max-w-4xl overflow-x-auto pb-2">
+              <div className="flex gap-1 justify-center max-w-4xl px-6 py-3">
                 {currentPlayer.hand.map((card, cardIndex) => {
                   const isSelected = selectedCards.some(
                     (c) => c.id === card.id
@@ -256,7 +256,7 @@ export const PokerTable = ({
                       initial={{ y: 50, opacity: 0, rotateY: 180 }}
                       animate={{ y: 0, opacity: 1, rotateY: 0 }}
                       transition={{ delay: cardIndex * 0.1, duration: 0.6 }}
-                      className="transform hover:scale-105 transition-all duration-200"
+                      className="transform transition-all duration-200"
                       style={{
                         zIndex: isSelected ? 20 : cardIndex,
                         marginLeft: cardIndex > 0 ? "-12px" : "0",

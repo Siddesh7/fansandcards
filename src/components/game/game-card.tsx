@@ -2,6 +2,7 @@
 
 import { AnswerCard } from "../../types/game";
 import { cn } from "@/lib/utils";
+import { motion } from "framer-motion";
 
 interface GameCardProps {
   card: AnswerCard;
@@ -19,9 +20,9 @@ const rarityColors = {
 };
 
 const sizeClasses = {
-  sm: "w-32 h-44 text-xs",
-  md: "w-40 h-56 text-sm",
-  lg: "w-48 h-64 text-base",
+  sm: "w-40 h-44 text-xs",
+  md: "w-52 h-56 text-sm",
+  lg: "w-60 h-64 text-base",
 };
 
 export const GameCard = ({
@@ -32,15 +33,18 @@ export const GameCard = ({
   className,
 }: GameCardProps) => {
   return (
-    <div
+    <motion.div
       className={cn(
         "relative cursor-pointer transform transition-all duration-200",
         sizeClasses[size],
-        "hover:scale-105 hover:z-10",
+        "hover:z-10",
         isSelected && "scale-110 z-20",
         className
       )}
       onClick={onClick}
+      whileHover={{ scale: 1.05 }}
+      whileTap={{ scale: 0.95 }}
+      transition={{ scale: { duration: 0.1, ease: "easeOut" } }}
     >
       <div
         className={cn(
@@ -99,6 +103,6 @@ export const GameCard = ({
           <div className="absolute -inset-1 rounded-lg bg-gradient-to-r from-yellow-400 to-orange-400 opacity-75 blur-sm -z-10" />
         )}
       </div>
-    </div>
+    </motion.div>
   );
 };

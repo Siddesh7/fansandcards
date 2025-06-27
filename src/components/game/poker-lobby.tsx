@@ -288,7 +288,7 @@ export const PokerLobby = ({
             <h3 className="text-amber-400 font-bold text-xl mb-4 text-center">
               Sample Cards - Get Ready to Roast! 🔥
             </h3>
-            <div className="flex justify-center gap-4 overflow-x-auto pb-4">
+            <div className="flex justify-center gap-4 px-8 py-4 overflow-hidden">
               {sampleCards.slice(0, 5).map((card, index) => (
                 <motion.div
                   key={card.id}
@@ -302,7 +302,7 @@ export const PokerLobby = ({
                   <PokerCard
                     card={card}
                     size="md"
-                    className="hover:transform hover:scale-110 transition-transform duration-200"
+                    className="transition-transform duration-200"
                   />
                 </motion.div>
               ))}

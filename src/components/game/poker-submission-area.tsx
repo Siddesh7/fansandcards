@@ -52,7 +52,7 @@ export const PokerSubmissionArea = ({
               </p>
             </div>
 
-            <div className="flex justify-center gap-2 mb-4">
+            <div className="flex justify-center gap-2 mb-4 px-4 py-2">
               {selectedCards.map((card, index) => (
                 <div
                   key={card.id}
@@ -150,7 +150,7 @@ export const PokerSubmissionArea = ({
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 p-4">
             <AnimatePresence>
               {currentGame.submissions.map((submission, index) => (
                 <motion.div

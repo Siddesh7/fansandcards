@@ -4,7 +4,7 @@ import React from "react";
 import { Game, Player, Submission } from "../../types/game";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
-import { Crown, Trophy, Star, Sparkles } from "lucide-react";
+import { Crown, Trophy, Star, Sparkles, HelpCircle } from "lucide-react";
 import { PokerCard } from "./poker-card";
 
 interface RoundWinnerCelebrationProps {
@@ -29,11 +29,11 @@ export const RoundWinnerCelebration = ({
     return null;
   }
 
-  // Auto-hide after 3 seconds
+  // Auto-hide after 5 seconds (increased to give more time to read question)
   React.useEffect(() => {
     const timer = setTimeout(() => {
       onComplete?.();
-    }, 3000);
+    }, 5000);
 
     return () => clearTimeout(timer);
   }, [onComplete]);
@@ -60,7 +60,7 @@ export const RoundWinnerCelebration = ({
             stiffness: 300,
             duration: 0.8,
           }}
-          className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-3xl p-8 border-4 border-amber-500 shadow-2xl max-w-2xl w-full mx-4 relative overflow-hidden"
+          className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-3xl p-8 border-4 border-amber-500 shadow-2xl max-w-4xl w-full mx-4 relative overflow-hidden"
         >
           {/* Celebration particles background */}
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -164,27 +164,54 @@ export const RoundWinnerCelebration = ({
             </div>
           </motion.div>
 
+          {/* Question Card Section */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.1 }}
+            className="text-center mb-6"
+          >
+            <h3 className="text-white font-bold text-xl mb-4 flex items-center justify-center gap-2">
+              <HelpCircle className="text-purple-400" size={20} />
+              The Question
+              <HelpCircle className="text-purple-400" size={20} />
+            </h3>
+
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: 1.2, type: "spring", damping: 15 }}
+              className="max-w-2xl mx-auto"
+            >
+              <div className="bg-gradient-to-br from-purple-600 to-purple-800 rounded-xl border-2 border-purple-400 shadow-lg p-6">
+                <div className="text-white font-bold text-lg md:text-xl leading-relaxed">
+                  {currentGame.questionCard.text}
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+
           {/* Winning cards */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1.2 }}
+            transition={{ delay: 1.3 }}
             className="text-center"
           >
             <h3 className="text-white font-bold text-xl mb-4 flex items-center justify-center gap-2">
               <Sparkles className="text-amber-400" size={20} />
-              Winning Cards
+              Winning Answer
               <Sparkles className="text-amber-400" size={20} />
             </h3>
 
-            <div className="flex justify-center gap-4 flex-wrap">
+            <div className="flex justify-center gap-4 flex-wrap px-6 py-4">
               {winningSubmission.cards.map((card, index) => (
                 <motion.div
                   key={index}
                   initial={{ scale: 0, rotateY: 180 }}
                   animate={{ scale: 1, rotateY: 0 }}
                   transition={{
-                    delay: 1.4 + index * 0.2,
+                    delay: 1.5 + index * 0.2,
                     type: "spring",
                     damping: 15,
                   }}
@@ -199,7 +226,7 @@ export const RoundWinnerCelebration = ({
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 2 }}
+            transition={{ delay: 2.5 }}
             className="mt-6 text-center"
           >
             <div className="text-gray-400 text-sm mb-2">
@@ -208,7 +235,7 @@ export const RoundWinnerCelebration = ({
             <motion.div
               initial={{ width: "0%" }}
               animate={{ width: "100%" }}
-              transition={{ duration: 3, ease: "linear" }}
+              transition={{ duration: 5, ease: "linear" }}
               className="h-2 bg-gradient-to-r from-amber-500 to-yellow-500 rounded-full mx-auto max-w-xs"
             />
           </motion.div>

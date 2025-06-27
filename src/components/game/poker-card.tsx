@@ -47,10 +47,10 @@ const rarityConfig = {
 };
 
 const sizeClasses = {
-  xs: "w-16 h-24",
-  sm: "w-20 h-28",
-  md: "w-24 h-36",
-  lg: "w-32 h-48",
+  xs: "w-20 h-24",
+  sm: "w-28 h-28",
+  md: "w-32 h-36",
+  lg: "w-40 h-48",
 };
 
 const textSizeClasses = {
@@ -78,14 +78,14 @@ export const PokerCard = ({
         className={cn(
           "relative cursor-pointer transform transition-all duration-300",
           sizeClasses[size],
-          "hover:scale-105",
           className
         )}
         onClick={onClick}
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
+        transition={{ scale: { duration: 0.1, ease: "easeOut" } }}
       >
-        <div className="absolute inset-0 w-24 h-full rounded-lg bg-gradient-to-br from-red-800 via-red-900 to-red-950 border-2 border-red-600 shadow-lg overflow-hidden">
+        <div className="absolute inset-0 w-full h-full rounded-lg bg-gradient-to-br from-red-800 via-red-900 to-red-950 border-2 border-red-600 shadow-lg overflow-hidden">
           {/* Card back pattern */}
           <div className="absolute inset-2 rounded-md bg-gradient-to-br from-red-700 to-red-800 border border-red-500">
             <div className="absolute inset-1 rounded border border-red-400/50">
@@ -107,7 +107,7 @@ export const PokerCard = ({
       className={cn(
         "relative cursor-pointer transform transition-all duration-300",
         sizeClasses[size],
-        "hover:scale-105 hover:z-10",
+        "hover:z-10",
         isSelected && "scale-110 z-20",
         className
       )}
@@ -116,7 +116,10 @@ export const PokerCard = ({
       whileTap={{ scale: 0.95 }}
       initial={{ rotateY: 180 }}
       animate={{ rotateY: 0 }}
-      transition={{ duration: 0.6 }}
+      transition={{
+        rotateY: { duration: 0.6 },
+        scale: { duration: 0.1, ease: "easeOut" },
+      }}
     >
       {/* Card container */}
       <div
