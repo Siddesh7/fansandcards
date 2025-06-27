@@ -15,18 +15,41 @@ export const setupSocketHandlers = (io: Server) => {
     // Room management
     socket.on("room:create", async (data) => {
       try {
-        const room = await roomService.createRoom(
+        const { room, player } = await roomService.createRoom(
           data.name,
           data.settings,
-          socket.id
+          socket.id,
+          data.playerName || "Host"
         );
         socket.join(room.id);
-        socket.emit("room:created", room);
+        socket.emit("room:created", { room, playerId: player.id });
         io.emit("rooms:updated");
       } catch (error) {
         socket.emit("error", {
           message: "Failed to create room",
           code: "ROOM_CREATE_ERROR",
+        });
+      }
+    });
+
+    // Create room and join in one step (preferred method)
+    socket.on("room:create-and-join", async (data) => {
+      try {
+        // Create the room with the creator as the first player
+        const { room, player } = await roomService.createRoom(
+          data.name,
+          data.settings,
+          socket.id,
+          data.playerName
+        );
+
+        socket.join(room.id);
+        socket.emit("room:created", { room, playerId: player.id });
+        io.emit("rooms:updated");
+      } catch (error) {
+        socket.emit("error", {
+          message: "Failed to create and join room",
+          code: "ROOM_CREATE_JOIN_ERROR",
         });
       }
     });
@@ -50,10 +73,44 @@ export const setupSocketHandlers = (io: Server) => {
       }
     });
 
+    socket.on("room:join-by-code", async (data) => {
+      try {
+        // Find room by last 6 characters of ID
+        const rooms = await roomService.getAllRooms();
+        const room = rooms.find(
+          (r) => r.id.slice(-6).toUpperCase() === data.roomCode.toUpperCase()
+        );
+
+        if (!room) {
+          socket.emit("error", {
+            message: "Room not found with that code",
+            code: "ROOM_NOT_FOUND",
+          });
+          return;
+        }
+
+        const { room: updatedRoom, player } = await roomService.joinRoom(
+          room.id,
+          data.playerName,
+          socket.id
+        );
+        socket.join(room.id);
+        socket.emit("room:joined", { room: updatedRoom, playerId: player.id });
+        io.to(room.id).emit("room:updated", updatedRoom);
+        io.emit("rooms:updated");
+      } catch (error) {
+        socket.emit("error", {
+          message: "Failed to join room with code",
+          code: "ROOM_JOIN_CODE_ERROR",
+        });
+      }
+    });
+
     socket.on("room:leave", async (data) => {
       try {
         const room = await roomService.leaveRoom(data.roomId, socket.id);
         socket.leave(data.roomId);
+        socket.emit("room:left");
         if (room) {
           io.to(data.roomId).emit("room:updated", room);
         }
@@ -98,15 +155,27 @@ export const setupSocketHandlers = (io: Server) => {
 
     socket.on("game:submit-cards", async (data) => {
       try {
+        // Get playerId from socketId
+        const playerInfo = roomService.getPlayerInfo(socket.id);
+        if (!playerInfo) {
+          throw new Error("Player not found");
+        }
+
         const game = await gameService.submitCards(
           data.roomId,
-          socket.id,
+          playerInfo.playerId,
           data.cards
         );
         io.to(data.roomId).emit("game:updated", game);
 
+        // Get the specific updated room directly
+        const updatedRoom = await Room.findOne({ id: data.roomId });
+        if (updatedRoom) {
+          io.to(data.roomId).emit("room:updated", updatedRoom.toObject());
+        }
+
         // Check if all players have submitted
-        if (gameService.allPlayersSubmitted(game)) {
+        if (await gameService.allPlayersSubmitted(game)) {
           io.to(data.roomId).emit("game:judging-phase", game);
         }
       } catch (error) {
@@ -119,19 +188,40 @@ export const setupSocketHandlers = (io: Server) => {
 
     socket.on("game:judge-pick", async (data) => {
       try {
+        // Get playerId from socketId
+        const playerInfo = roomService.getPlayerInfo(socket.id);
+        if (!playerInfo) {
+          throw new Error("Player not found");
+        }
+
         const game = await gameService.judgePickWinner(
           data.roomId,
-          socket.id,
+          playerInfo.playerId,
           data.submissionIndex
         );
         io.to(data.roomId).emit("game:round-result", game);
 
+        // Get the specific updated room directly
+        const updatedRoom = await Room.findOne({ id: data.roomId });
+        if (updatedRoom) {
+          io.to(data.roomId).emit("room:updated", updatedRoom.toObject());
+        }
+
         // Check if game is finished
+        console.log("🎮 Current round after judge pick:", game.currentRound);
+        console.log(
+          "🎮 Checking if game finished: currentRound >= 5 ->",
+          game.currentRound >= 5
+        );
+
         if (game.currentRound >= 5) {
+          console.log("🏁 Game finishing! Calling finishGame...");
           const finalResults = await gameService.finishGame(data.roomId);
+          console.log("🏁 Final results received:", finalResults);
           io.to(data.roomId).emit("game:finished", finalResults);
           io.emit("rooms:updated");
         } else {
+          console.log("⏭️ Moving to next round...");
           // Auto-start next round after delay
           setTimeout(async () => {
             try {
@@ -143,6 +233,7 @@ export const setupSocketHandlers = (io: Server) => {
           }, 5000); // 5 second delay
         }
       } catch (error) {
+        console.error("Judge pick error:", error);
         socket.emit("error", {
           message: "Failed to pick winner",
           code: "JUDGE_ERROR",

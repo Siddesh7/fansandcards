@@ -16,15 +16,16 @@ export class RoomService {
   async createRoom(
     name: string,
     settings: GameSettings,
-    socketId: string
-  ): Promise<RoomInterface> {
+    socketId: string,
+    creatorName: string
+  ): Promise<{ room: RoomInterface; player: Player }> {
     const roomId = uuidv4();
     const playerId = uuidv4();
 
     // Create room creator as first player
     const creator: Player = {
       id: playerId,
-      name: "Host",
+      name: creatorName,
       score: 0,
       isReady: false,
       isConnected: true,
@@ -49,7 +50,7 @@ export class RoomService {
     // Track socket to player mapping
     this.socketToPlayer.set(socketId, { roomId, playerId });
 
-    return roomData;
+    return { room: roomData, player: creator };
   }
 
   async joinRoom(
@@ -86,7 +87,7 @@ export class RoomService {
     // Track socket to player mapping
     this.socketToPlayer.set(socketId, { roomId, playerId });
 
-    return { room: room.toObject(), player: newPlayer };
+    return { room: room.toObject() as RoomInterface, player: newPlayer };
   }
 
   async leaveRoom(
@@ -116,7 +117,7 @@ export class RoomService {
     await room.save();
     this.socketToPlayer.delete(socketId);
 
-    return room.toObject();
+    return room.toObject() as RoomInterface;
   }
 
   async toggleReady(
@@ -144,14 +145,18 @@ export class RoomService {
     room.players[playerIndex].isReady = isReady;
     await room.save();
 
-    return room.toObject();
+    return room.toObject() as RoomInterface;
   }
 
   async getAllRooms(): Promise<RoomInterface[]> {
     const rooms = await Room.find({ gameState: "waiting" }).sort({
       createdAt: -1,
     });
-    return rooms.map((room) => room.toObject());
+    return rooms.map((room) => room.toObject() as RoomInterface);
+  }
+
+  getPlayerInfo(socketId: string): { roomId: string; playerId: string } | null {
+    return this.socketToPlayer.get(socketId) || null;
   }
 
   async handleDisconnect(socketId: string): Promise<void> {
@@ -181,8 +186,8 @@ export class RoomService {
   }
 
   private dealCards(): Player["hand"] {
-    // Shuffle answer cards and deal 7 cards
+    // Shuffle answer cards and deal 10 cards (increased from 7 for more variety)
     const shuffled = [...answerCards].sort(() => Math.random() - 0.5);
-    return shuffled.slice(0, 7);
+    return shuffled.slice(0, 10);
   }
 }
