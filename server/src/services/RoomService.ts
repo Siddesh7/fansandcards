@@ -42,6 +42,9 @@ export class RoomService {
       settings,
       createdAt: new Date(),
       createdBy: playerId,
+      depositAmount: "1000000000", // 0.000000001 ETH in wei
+      totalPot: "0",
+      treasureWallet: "0x9bfeBd2E81725D7a3282cdB01cD1C3732178E954",
     };
 
     const room = new Room(roomData);
@@ -183,6 +186,78 @@ export class RoomService {
     }
 
     this.socketToPlayer.delete(socketId);
+  }
+
+  async recordDeposit(
+    roomId: string,
+    socketId: string,
+    txHash: string,
+    walletAddress: string
+  ): Promise<RoomInterface> {
+    const playerInfo = this.socketToPlayer.get(socketId);
+    if (!playerInfo || playerInfo.roomId !== roomId) {
+      throw new Error("Player not in room");
+    }
+
+    const room = await Room.findOne({ id: roomId });
+    if (!room) {
+      throw new Error("Room not found");
+    }
+
+    const playerIndex = room.players.findIndex(
+      (p) => p.id === playerInfo.playerId
+    );
+    if (playerIndex === -1) {
+      throw new Error("Player not found in room");
+    }
+
+    // Update player deposit info
+    room.players[playerIndex].hasDeposited = true;
+    room.players[playerIndex].depositTxHash = txHash;
+    room.players[playerIndex].walletAddress = walletAddress;
+
+    // Update room pot
+    const currentPot = BigInt(room.totalPot || "0");
+    const depositAmount = BigInt(room.depositAmount);
+    room.totalPot = (currentPot + depositAmount).toString();
+
+    await room.save();
+    return room.toObject() as RoomInterface;
+  }
+
+  async recordPayout(
+    roomId: string,
+    winnerPlayerId: string,
+    txHash: string
+  ): Promise<RoomInterface> {
+    const room = await Room.findOne({ id: roomId });
+    if (!room) {
+      throw new Error("Room not found");
+    }
+
+    // Update room with payout info
+    room.winner = winnerPlayerId;
+    room.payoutTxHash = txHash;
+    room.gameState = "finished";
+
+    await room.save();
+    return room.toObject() as RoomInterface;
+  }
+
+  async canStartGame(roomId: string): Promise<boolean> {
+    const room = await Room.findOne({ id: roomId });
+    if (!room) {
+      return false;
+    }
+
+    // Check if all players have deposited
+    const allDeposited = room.players.every(
+      (player) => player.hasDeposited === true
+    );
+    const allReady = room.players.every((player) => player.isReady === true);
+    const minPlayers = room.players.length >= room.settings.minPlayers;
+
+    return allDeposited && allReady && minPlayers;
   }
 
   private dealCards(): Player["hand"] {

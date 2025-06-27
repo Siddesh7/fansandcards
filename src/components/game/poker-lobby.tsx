@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PokerCard } from "./poker-card";
+import { BettingPanel } from "./betting-panel";
 import { useState } from "react";
 
 interface PokerLobbyProps {
@@ -27,6 +28,7 @@ interface PokerLobbyProps {
   onStartGame: () => void;
   onLeaveRoom: () => void;
   sampleCards?: AnswerCard[];
+  onDeposit?: (txHash: string) => void;
 }
 
 export const PokerLobby = ({
@@ -37,12 +39,15 @@ export const PokerLobby = ({
   onStartGame,
   onLeaveRoom,
   sampleCards = [],
+  onDeposit,
 }: PokerLobbyProps) => {
   const [copied, setCopied] = useState(false);
   const currentPlayer = room.players.find((p) => p.id === currentPlayerId);
   const isHost = room.createdBy === currentPlayerId;
   const readyCount = room.players.filter((p) => p.isReady).length;
-  const canStart = readyCount >= room.settings.minPlayers && isHost;
+  const allDeposited = room.players.every((player) => player.hasDeposited);
+  const canStart =
+    readyCount >= room.settings.minPlayers && isHost && allDeposited;
 
   const roomCode = room.id.slice(-6).toUpperCase();
 
@@ -261,7 +266,7 @@ export const PokerLobby = ({
                   className="w-full bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-700 hover:to-yellow-700 text-black font-bold py-3 text-lg disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Play className="mr-2" size={20} />
-                  Start Game
+                  {!allDeposited ? "Waiting for Deposits..." : "Start Game"}
                 </Button>
               )}
 
@@ -277,12 +282,25 @@ export const PokerLobby = ({
           </motion.div>
         </div>
 
+        {/* Betting Panel */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.6 }}
+        >
+          <BettingPanel
+            room={room}
+            currentPlayer={currentPlayer}
+            onDeposit={onDeposit}
+          />
+        </motion.div>
+
         {/* Sample cards preview */}
         {sampleCards.length > 0 && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6 }}
+            transition={{ delay: 0.7 }}
             className="bg-black/20 backdrop-blur-sm rounded-2xl p-6 border-2 border-none shadow-xl"
           >
             <h3 className="text-amber-400 font-bold text-xl mb-4 text-center">
@@ -295,7 +313,7 @@ export const PokerLobby = ({
                   initial={{ opacity: 0, y: 20, rotateY: 180 }}
                   animate={{ opacity: 1, y: 0, rotateY: 0 }}
                   transition={{
-                    delay: 0.7 + index * 0.1,
+                    delay: 0.8 + index * 0.1,
                     duration: 0.6,
                   }}
                 >

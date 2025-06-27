@@ -10,6 +10,9 @@ const playerSchema = new Schema({
   score: { type: Number, default: 0 },
   isReady: { type: Boolean, default: false },
   isConnected: { type: Boolean, default: true },
+  hasDeposited: { type: Boolean, default: false },
+  depositTxHash: { type: String },
+  walletAddress: { type: String },
   hand: [
     {
       id: String,
@@ -41,6 +44,14 @@ const roomSchema = new Schema({
   settings: gameSettingsSchema,
   createdAt: { type: Date, default: Date.now },
   createdBy: { type: String, required: true },
+  depositAmount: { type: String, default: "1000000000" }, // 0.000000001 ETH in wei
+  totalPot: { type: String, default: "0" },
+  treasureWallet: {
+    type: String,
+    default: "0x9bfeBd2E81725D7a3282cdB01cD1C3732178E954",
+  },
+  winner: { type: String },
+  payoutTxHash: { type: String },
 });
 
 export const Room = mongoose.model<RoomDocument>("Room", roomSchema);

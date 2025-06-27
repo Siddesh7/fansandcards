@@ -112,6 +112,18 @@ export const useSocket = () => {
       setError(error.message);
     });
 
+    // Betting events
+    socket.on("deposit:confirmed", (data: { txHash: string }) => {
+      console.log("💰 Deposit confirmed:", data);
+    });
+
+    socket.on(
+      "payout:completed",
+      (data: { winnerPlayerId: string; amount: string; txHash: string }) => {
+        console.log("🏆 Payout completed:", data);
+      }
+    );
+
     return () => {
       socket.disconnect();
     };
@@ -187,6 +199,34 @@ export const useSocket = () => {
     }
   };
 
+  const recordDeposit = (
+    roomId: string,
+    txHash: string,
+    walletAddress: string
+  ) => {
+    if (socketRef.current) {
+      socketRef.current.emit("room:deposit", {
+        roomId,
+        txHash,
+        walletAddress,
+      });
+    }
+  };
+
+  const recordPayout = (
+    roomId: string,
+    winnerPlayerId: string,
+    txHash: string
+  ) => {
+    if (socketRef.current) {
+      socketRef.current.emit("room:payout", {
+        roomId,
+        winnerPlayerId,
+        txHash,
+      });
+    }
+  };
+
   const clearError = () => setError(null);
   const clearResults = () => setGameResults(null);
 
@@ -209,5 +249,7 @@ export const useSocket = () => {
     clearError,
     clearResults,
     fetchRooms,
+    recordDeposit,
+    recordPayout,
   };
 };

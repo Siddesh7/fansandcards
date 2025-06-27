@@ -139,6 +139,47 @@ export const setupSocketHandlers = (io: Server) => {
       }
     });
 
+    // Betting/Deposit handlers
+    socket.on("room:deposit", async (data) => {
+      try {
+        const room = await roomService.recordDeposit(
+          data.roomId,
+          socket.id,
+          data.txHash,
+          data.walletAddress
+        );
+        io.to(data.roomId).emit("room:updated", room);
+        socket.emit("deposit:confirmed", { txHash: data.txHash });
+      } catch (error) {
+        socket.emit("error", {
+          message: "Failed to record deposit",
+          code: "DEPOSIT_ERROR",
+        });
+      }
+    });
+
+    socket.on("room:payout", async (data) => {
+      try {
+        // Only allow payouts from authorized sources (could add admin check here)
+        const room = await roomService.recordPayout(
+          data.roomId,
+          data.winnerPlayerId,
+          data.txHash
+        );
+        io.to(data.roomId).emit("room:updated", room);
+        io.to(data.roomId).emit("payout:completed", {
+          winnerPlayerId: data.winnerPlayerId,
+          amount: room.totalPot,
+          txHash: data.txHash,
+        });
+      } catch (error) {
+        socket.emit("error", {
+          message: "Failed to record payout",
+          code: "PAYOUT_ERROR",
+        });
+      }
+    });
+
     // Game management
     socket.on("game:start", async (data) => {
       try {

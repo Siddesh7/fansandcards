@@ -97,6 +97,7 @@ export default function Home() {
     judgePick,
     clearError,
     clearResults,
+    recordDeposit,
   } = useSocket();
 
   const [showCreateRoom, setShowCreateRoom] = useState(false);
@@ -446,6 +447,12 @@ export default function Home() {
         onStartGame={() => startGame(currentRoom.id)}
         onLeaveRoom={handleLeaveRoom}
         sampleCards={sampleCards}
+        onDeposit={(txHash) => {
+          console.log("💰 Deposit completed, calling recordDeposit:", txHash);
+          if (user?.wallet?.address) {
+            recordDeposit(currentRoom.id, txHash, user.wallet.address);
+          }
+        }}
       />
     );
   }
